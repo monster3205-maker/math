@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>관리자 | BrightAcademy</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#f0f3f8; --side:#0f172a; --side2:#1e293b;
+  --accent:#3b82f6; --accent-bg:#eff6ff;
+  --orange:#f97316; --orange-bg:#fff7ed;
+  --green:#22c55e; --green-bg:#dcfce7;
+  --amber:#f59e0b; --amber-bg:#fef3c7;
+  --red:#ef4444; --red-bg:#fee2e2;
+  --border:#e2e8f0; --card:#fff; --ink:#0f172a; --muted:#64748b;
+  --radius:14px; --shadow:0 1px 3px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.06);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--ink);display:flex;min-height:100vh;}
+
+/* ── LOGIN ── */
+.login-wall{position:fixed;inset:0;background:var(--side);display:flex;align-items:center;justify-content:center;z-index:9000;}
+.login-box{background:#fff;border-radius:20px;padding:44px 40px;width:340px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.3);}
+.login-logo{font-size:22px;font-weight:700;margin-bottom:4px;letter-spacing:-.3px;}
+.login-logo em{color:var(--orange);font-style:normal;}
+.login-tagline{font-size:12px;color:var(--muted);margin-bottom:30px;}
+.login-label{display:block;font-size:11px;font-weight:700;color:var(--muted);text-align:left;margin-bottom:6px;letter-spacing:.3px;}
+.login-input{width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:'Noto Sans KR',sans-serif;font-size:22px;text-align:center;letter-spacing:10px;outline:none;margin-bottom:14px;transition:border-color .15s;}
+.login-input:focus{border-color:var(--accent);}
+.login-btn{width:100%;padding:13px;border:none;border-radius:10px;background:var(--ink);color:#fff;font-family:'Noto Sans KR',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:background .15s;}
+.login-btn:hover{background:#334155;}
+.login-err{color:var(--red);font-size:12px;margin-top:10px;display:none;}
+.login-hint{font-size:11px;color:var(--muted);margin-top:16px;}
+
+/* ── SIDEBAR ── */
+.sidebar{width:216px;background:var(--side);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:200;}
+.sb-logo{padding:22px 18px 18px;border-bottom:1px solid rgba(255,255,255,.07);}
+.sb-logo .name{color:#fff;font-size:15px;font-weight:700;letter-spacing:-.2px;}
+.sb-logo .name em{color:var(--orange);font-style:normal;}
+.sb-logo .sub{color:rgba(255,255,255,.3);font-size:11px;margin-top:3px;}
+.sb-nav{padding:12px 8px;flex:1;overflow-y:auto;}
+.nav-sec{font-size:9px;font-weight:700;letter-spacing:1.5px;color:rgba(255,255,255,.25);padding:0 10px;margin:16px 0 5px;}
+.nav-item{display:flex;align-items:center;gap:9px;padding:10px 12px;border-radius:9px;cursor:pointer;font-size:13px;font-weight:500;color:rgba(255,255,255,.5);transition:all .15s;margin-bottom:2px;user-select:none;}
+.nav-item:hover{background:var(--side2);color:#fff;}
+.nav-item.active{background:var(--accent);color:#fff;}
+.nav-icon{font-size:15px;width:18px;text-align:center;flex-shrink:0;}
+.sb-foot{padding:14px 18px;border-top:1px solid rgba(255,255,255,.07);font-size:11px;color:rgba(255,255,255,.2);}
+
+/* ── MAIN ── */
+.main{margin-left:216px;flex:1;display:flex;flex-direction:column;min-height:100vh;}
+.topbar{background:#fff;border-bottom:1px solid var(--border);height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:100;box-shadow:0 1px 0 var(--border);}
+.topbar-title{font-size:15px;font-weight:700;}
+.topbar-actions{display:flex;align-items:center;gap:10px;}
+
+/* ── BUTTONS ── */
+.btn-pri{display:inline-flex;align-items:center;gap:6px;background:var(--ink);color:#fff;border:none;padding:9px 16px;border-radius:9px;font-family:'Noto Sans KR',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s;}
+.btn-pri:hover{background:#334155;}
+.btn-orange{background:var(--orange);color:#fff;}
+.btn-orange:hover{background:#ea580c;}
+.btn-sec{display:inline-flex;align-items:center;gap:6px;background:#fff;color:var(--ink);border:1.5px solid var(--border);padding:8px 14px;border-radius:9px;font-family:'Noto Sans KR',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;}
+.btn-sec:hover{border-color:var(--accent);color:var(--accent);}
+.btn-sm{padding:5px 11px;border-radius:7px;font-family:'Noto Sans KR',sans-serif;font-size:11px;font-weight:600;cursor:pointer;border:1.5px solid;transition:all .15s;}
+.btn-edit{border-color:#bfdbfe;color:var(--accent);background:var(--accent-bg);}
+.btn-edit:hover{background:var(--accent);color:#fff;border-color:var(--accent);}
+.btn-del{border-color:#fecaca;color:var(--red);background:var(--red-bg);}
+.btn-del:hover{background:var(--red);color:#fff;border-color:var(--red);}
+
+/* ── PAGE ── */
+.page{display:none;}
+.page.active{display:block;}
+.page-body{padding:26px 28px;}
+.page-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;}
+.page-title{font-size:19px;font-weight:700;}
+.page-sub{font-size:13px;color:var(--muted);margin-top:2px;}
+
+/* ── STATS ── */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px;}
+.stat{background:#fff;border-radius:var(--radius);border:1px solid var(--border);padding:18px 16px;display:flex;align-items:center;gap:14px;box-shadow:var(--shadow);}
+.stat-ico{width:44px;height:44px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.stat-n{font-size:24px;font-weight:700;line-height:1;}
+.stat-l{font-size:11px;color:var(--muted);margin-top:3px;font-weight:500;}
+
+/* ── CARD ── */
+.card{background:#fff;border-radius:var(--radius);border:1px solid var(--border);overflow:hidden;margin-bottom:20px;box-shadow:var(--shadow);}
+.card-hdr{padding:16px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.card-title{font-size:14px;font-weight:700;}
+.card-title span{font-size:12px;font-weight:400;color:var(--muted);margin-left:6px;}
+
+/* ── FILTER BAR ── */
+.fbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:12px 22px;background:#f8fafc;border-bottom:1px solid var(--border);}
+.fbar-lbl{font-size:10px;font-weight:700;letter-spacing:.5px;color:var(--muted);}
+.fsel{padding:7px 10px;border:1.5px solid var(--border);border-radius:8px;font-family:'Noto Sans KR',sans-serif;font-size:12px;color:var(--ink);background:#fff;outline:none;cursor:pointer;}
+.fsel:focus{border-color:var(--accent);}
+.fsearch{padding:7px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:'Noto Sans KR',sans-serif;font-size:12px;outline:none;min-width:150px;}
+.fsearch:focus{border-color:var(--accent);}
+
+/* ── TABLE ── */
+.tbl-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;}
+thead th{background:#f8fafc;font-size:10px;font-weight:700;letter-spacing:.5px;color:var(--muted);padding:10px 16px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap;}
+tbody td{padding:12px 16px;font-size:12px;border-bottom:1px solid var(--border);vertical-align:middle;}
+tbody tr:last-child td{border-bottom:none;}
+tbody tr:hover{background:#fafbfd;}
+.td-b{font-weight:600;}
+
+.badge{display:inline-block;padding:3px 9px;border-radius:999px;font-size:10px;font-weight:700;}
+.b-미확인{background:#f1f5f9;color:var(--muted);}
+.b-확인{background:var(--green-bg);color:#15803d;}
+.b-등록완료{background:var(--accent-bg);color:#1d4ed8;}
+.b-거절{background:var(--red-bg);color:var(--red);}
+.b-수강신청{background:var(--accent-bg);color:var(--accent);}
+.b-대기신청{background:var(--amber-bg);color:var(--amber);}
+
+.cap-cell{min-width:100px;}
+.cap-n{font-size:11px;font-weight:600;margin-bottom:3px;}
+.cap-bar{height:4px;background:#e2e8f0;border-radius:999px;overflow:hidden;}
+.cap-f{height:4px;border-radius:999px;}
+
+/* ── MODAL ── */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:1000;align-items:center;justify-content:center;padding:20px;}
+.overlay.open{display:flex;animation:fdIn .15s;}
+@keyframes fdIn{from{opacity:0}to{opacity:1}}
+.modal{background:#fff;border-radius:18px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;animation:mUp .2s ease;box-shadow:0 20px 60px rgba(0,0,0,.2);}
+@keyframes mUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.m-hdr{padding:22px 26px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:#fff;z-index:10;}
+.m-title{font-size:16px;font-weight:700;}
+.m-close{background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted);padding:4px;border-radius:6px;transition:background .12s;}
+.m-close:hover{background:#f1f5f9;}
+.m-body{padding:22px 26px;}
+.m-foot{padding:14px 26px 22px;border-top:1px solid var(--border);display:flex;gap:10px;}
+.btn-cancel{flex:1;padding:12px;border:1.5px solid var(--border);border-radius:10px;background:#fff;font-family:'Noto Sans KR',sans-serif;font-size:13px;font-weight:600;cursor:pointer;color:var(--muted);}
+.btn-save{flex:2;padding:12px;border:none;border-radius:10px;background:var(--ink);color:#fff;font-family:'Noto Sans KR',sans-serif;font-size:13px;font-weight:700;cursor:pointer;}
+.btn-save:hover{background:#334155;}
+
+/* ── FORM ── */
+.fg{margin-bottom:15px;}
+.fg:last-child{margin-bottom:0;}
+.fl{display:block;font-size:11px;font-weight:700;color:var(--muted);margin-bottom:5px;letter-spacing:.2px;}
+.fl .req{color:var(--red);}
+.fi{width:100%;padding:10px 13px;border:1.5px solid var(--border);border-radius:9px;font-family:'Noto Sans KR',sans-serif;font-size:13px;color:var(--ink);background:#f8fafc;outline:none;transition:border-color .15s,background .15s;}
+.fi:focus{border-color:var(--accent);background:#fff;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:13px;}
+.form-hint{font-size:11px;color:var(--muted);margin-top:4px;line-height:1.5;}
+
+/* ── SLOT BUILDER ── */
+.slot-area-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.slot-area-title{font-size:12px;font-weight:700;}
+.btn-add-slot{display:inline-flex;align-items:center;gap:4px;background:var(--accent-bg);color:var(--accent);border:1.5px solid #bfdbfe;border-radius:7px;padding:5px 12px;font-family:'Noto Sans KR',sans-serif;font-size:11px;font-weight:700;cursor:pointer;transition:all .15s;}
+.btn-add-slot:hover{background:var(--accent);color:#fff;border-color:var(--accent);}
+.slot-item{border:1.5px solid var(--border);border-radius:10px;padding:13px;margin-bottom:9px;background:#f8fafc;position:relative;}
+.slot-del{position:absolute;top:9px;right:9px;background:none;border:none;font-size:15px;cursor:pointer;color:var(--muted);padding:3px 6px;border-radius:5px;transition:all .12s;}
+.slot-del:hover{color:var(--red);background:var(--red-bg);}
+.slot-row{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:9px;}
+.slot-row:last-child{margin-bottom:0;}
+.days-wrap{display:flex;flex-wrap:wrap;gap:5px;margin-top:5px;}
+.d-cb{display:none;}
+.d-lbl{padding:5px 10px;border:1.5px solid var(--border);border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;color:var(--muted);transition:all .12s;user-select:none;}
+.d-cb:checked+.d-lbl{background:var(--ink);border-color:var(--ink);color:#fff;}
+
+/* ── PAGE TEXT ─ 미리보기 ── */
+.preview-wrap{border-radius:var(--radius);overflow:hidden;border:1px solid var(--border);margin-bottom:20px;}
+.prev-hdr{background:#0f172a;padding:12px 18px;display:flex;align-items:center;justify-content:space-between;}
+.prev-hero{background:linear-gradient(135deg,#1e293b,#1e3a5f);padding:28px 20px 24px;text-align:center;color:#fff;position:relative;overflow:hidden;}
+.prev-hero::after{content:'';position:absolute;width:200px;height:200px;background:radial-gradient(circle,rgba(249,115,22,.3),transparent 70%);top:-50px;right:-30px;border-radius:50%;}
+.prev-chip{display:inline-block;background:rgba(249,115,22,.15);border:1px solid rgba(249,115,22,.35);color:#fb923c;padding:4px 12px;border-radius:999px;font-size:10px;font-weight:700;letter-spacing:1px;margin-bottom:8px;}
+.prev-title{font-size:18px;font-weight:900;line-height:1.35;margin-bottom:4px;white-space:pre-line;position:relative;z-index:1;}
+.prev-sub{font-size:11px;opacity:.7;position:relative;z-index:1;}
+
+/* ── TEXT PAGE FORM ── */
+.pt-section{background:#fff;border-radius:var(--radius);border:1px solid var(--border);margin-bottom:16px;overflow:hidden;box-shadow:var(--shadow);}
+.pt-section-hdr{padding:14px 20px;border-bottom:1px solid var(--border);font-size:13px;font-weight:700;background:#f8fafc;}
+.pt-section-body{padding:18px 20px;display:flex;flex-direction:column;gap:14px;}
+.pt-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+
+/* ── CONFIRM ── */
+.confirm-box{max-width:340px;padding:32px 28px;text-align:center;}
+.conf-ico{font-size:44px;margin-bottom:14px;}
+.conf-title{font-size:16px;font-weight:700;margin-bottom:8px;}
+.conf-desc{font-size:12px;color:var(--muted);line-height:1.7;}
+.conf-btns{display:flex;gap:10px;margin-top:20px;}
+.btn-cn{flex:1;padding:11px;border:1.5px solid var(--border);border-radius:9px;background:#fff;font-family:'Noto Sans KR',sans-serif;font-size:13px;font-weight:600;cursor:pointer;color:var(--muted);}
+.btn-cy{flex:1;padding:11px;border:none;border-radius:9px;background:var(--red);color:#fff;font-family:'Noto Sans KR',sans-serif;font-size:13px;font-weight:700;cursor:pointer;}
+
+/* ── EMPTY / LOADING ── */
+.empty{text-align:center;padding:56px 20px;color:var(--muted);}
+.empty-ico{font-size:44px;margin-bottom:10px;opacity:.5;}
+.empty-txt{font-size:13px;}
+.loading-cell{text-align:center;padding:52px;}
+.spinner{width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 10px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(14px);background:var(--ink);color:#fff;padding:10px 22px;border-radius:999px;font-size:12px;font-weight:600;z-index:9999;opacity:0;transition:all .28s;white-space:nowrap;pointer-events:none;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+@media(max-width:768px){.sidebar{display:none;}.main{margin-left:0;}.stats{grid-template-columns:repeat(2,1fr);}.form-row,.pt-row{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+
+<!-- ── 로그인 ── -->
+<div class="login-wall" id="loginWall">
+  <div class="login-box">
+    <div class="login-logo">Bright<em>Academy</em></div>
+    <div class="login-tagline">관리자 페이지</div>
+    <label class="login-label">비밀번호</label>
+    <input class="login-input" type="password" id="pwInput" maxlength="20"
+      onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="login-btn" onclick="doLogin()">로그인</button>
+    <div class="login-err" id="loginErr">비밀번호가 올바르지 않습니다.</div>
+    <div class="login-hint">기본 비밀번호: <strong>1234</strong><br>하단 JS의 ADMIN_PW 값으로 변경하세요.</div>
+  </div>
+</div>
+
+<!-- ── SIDEBAR ── -->
+<aside class="sidebar">
+  <div class="sb-logo">
+    <div class="name" id="sbLogoName">Bright<em>Academy</em></div>
+    <div class="sub">관리자 대시보드</div>
+  </div>
+  <nav class="sb-nav">
+    <div class="nav-sec">MENU</div>
+    <div class="nav-item active" id="nav-apps"       onclick="goto('apps')">      <span class="nav-icon">📋</span> 신청 현황</div>
+    <div class="nav-item"        id="nav-courses"    onclick="goto('courses')">   <span class="nav-icon">📚</span> 강좌 관리</div>
+    <div class="nav-item"        id="nav-pagetext"   onclick="goto('pagetext')">  <span class="nav-icon">✏️</span> 페이지 문구</div>
+    <div class="nav-sec">기타</div>
+    <div class="nav-item"        id="nav-guide"      onclick="goto('guide')">     <span class="nav-icon">🚀</span> 배포 가이드</div>
+  </nav>
+  <div class="sb-foot">v2.0</div>
+</aside>
+
+<!-- ── MAIN ── -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title" id="topbarTitle">신청 현황</div>
+    <div class="topbar-actions" id="topbarActions"></div>
+  </div>
+
+  <!-- ═══ 신청 현황 ═══ -->
+  <div class="page active" id="page-apps">
+    <div class="page-body">
+      <div class="stats" id="appStats"></div>
+      <div class="card">
+        <div class="card-hdr">
+          <div class="card-title">신청 목록 <span id="appCount"></span></div>
+        </div>
+        <div class="fbar">
+          <span class="fbar-lbl">FILTER</span>
+          <select class="fsel" id="fType"   onchange="renderApps()"><option value="">전체 유형</option><option>수강신청</option><option>대기신청</option></select>
+          <select class="fsel" id="fStatus" onchange="renderApps()"><option value="">전체 상태</option><option>미확인</option><option>확인</option><option>등록완료</option><option>거절</option></select>
+          <select class="fsel" id="fCourse" onchange="renderApps()"><option value="">전체 강좌</option></select>
+          <input  class="fsearch" id="fSearch" placeholder="이름·연락처 검색" oninput="renderApps()">
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>신청일시</th><th>유형</th><th>강좌명</th><th>시간대</th><th>학생이름</th><th>학년</th><th>연락처</th><th>상태</th><th>처리</th></tr></thead>
+            <tbody id="appTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ 강좌 관리 ═══ -->
+  <div class="page" id="page-courses">
+    <div class="page-body">
+      <div class="page-hdr">
+        <div><div class="page-title">강좌 관리</div><div class="page-sub">시간대·정원을 자유롭게 설정하세요</div></div>
+        <button class="btn-pri" onclick="openCourseModal()">＋ 새 강좌</button>
+      </div>
+      <div class="card">
+        <div class="card-hdr"><div class="card-title">강좌 목록 <span id="courseCount"></span></div></div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>강좌명</th><th>대상 학년</th><th>선생님</th><th>시간대</th><th>정원 현황</th><th>관리</th></tr></thead>
+            <tbody id="courseTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ 페이지 문구 ═══ -->
+  <div class="page" id="page-pagetext">
+    <div class="page-body">
+      <div class="page-hdr">
+        <div><div class="page-title">페이지 문구 설정</div><div class="page-sub">저장 즉시 수강신청 페이지에 반영됩니다</div></div>
+        <button class="btn-pri btn-orange" onclick="savePageText()">💾 저장 · 즉시 반영</button>
+      </div>
+
+      <!-- 실시간 미리보기 -->
+      <div class="card" style="margin-bottom:20px;">
+        <div class="card-hdr">
+          <div class="card-title">👁️ 실시간 미리보기</div>
+          <span style="font-size:11px;color:var(--muted);">입력하면 바로 반영</span>
+        </div>
+        <div class="preview-wrap" style="border:none;border-radius:0;margin:0;">
+          <div class="prev-hdr">
+            <div style="font-size:15px;font-weight:700;">
+              <span id="pv_main" style="color:#fff;"></span><span id="pv_em" style="color:#f97316;"></span>
+            </div>
+            <div id="pv_small" style="font-size:11px;color:rgba(255,255,255,.4);"></div>
+          </div>
+          <div class="prev-hero">
+            <div id="pv_chip" class="prev-chip"></div>
+            <div id="pv_title" class="prev-title"></div>
+            <div id="pv_sub" class="prev-sub"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 학원명 -->
+      <div class="pt-section">
+        <div class="pt-section-hdr">🏫 학원명 (헤더 로고)</div>
+        <div class="pt-section-body">
+          <div class="pt-row">
+            <div class="fg" style="margin:0;">
+              <label class="fl">앞부분 <span style="font-weight:400;color:var(--muted)">— 흰색</span></label>
+              <input class="fi" id="pt_main" placeholder="Bright" oninput="livePreview()">
+            </div>
+            <div class="fg" style="margin:0;">
+              <label class="fl">뒷부분 <span style="font-weight:400;color:var(--muted)">— 주황 강조</span></label>
+              <input class="fi" id="pt_em" placeholder="Academy" oninput="livePreview()">
+            </div>
+          </div>
+          <div class="fg" style="margin:0;">
+            <label class="fl">헤더 우측 소문구</label>
+            <input class="fi" id="pt_small" placeholder="2025 봄학기" oninput="livePreview()">
+          </div>
+        </div>
+      </div>
+
+      <!-- 히어로 배너 -->
+      <div class="pt-section">
+        <div class="pt-section-hdr">🎯 히어로 배너</div>
+        <div class="pt-section-body">
+          <div class="fg" style="margin:0;">
+            <label class="fl">배지 칩 문구 <span style="font-weight:400;color:var(--muted)">— 최상단 작은 태그</span></label>
+            <input class="fi" id="pt_chip" placeholder="2025 SPRING · 수학" oninput="livePreview()">
+          </div>
+          <div class="fg" style="margin:0;">
+            <label class="fl">메인 제목 <span style="font-weight:400;color:var(--muted)">— 줄바꿈은 \n 입력</span></label>
+            <input class="fi" id="pt_title" placeholder="3월 신학기\n수강신청" oninput="livePreview()">
+            <div class="form-hint">예: <code style="background:#f1f5f9;padding:1px 5px;border-radius:4px;">3월 신학기\n수강신청</code> → 2줄로 표시됩니다</div>
+          </div>
+          <div class="fg" style="margin:0;">
+            <label class="fl">부제목 <span style="font-weight:400;color:var(--muted)">— 제목 아래 설명</span></label>
+            <input class="fi" id="pt_sub" placeholder="원하시는 시간대를 선택하여 신청해 주세요" oninput="livePreview()">
+          </div>
+        </div>
+      </div>
+
+      <!-- 신청 안내문구 -->
+      <div class="pt-section">
+        <div class="pt-section-hdr">💬 신청 안내 문구</div>
+        <div class="pt-section-body">
+          <div class="fg" style="margin:0;">
+            <label class="fl">✅ 수강신청 안내 <span style="font-weight:400;color:var(--muted)">— 신청하기 버튼 위에 표시</span></label>
+            <input class="fi" id="pt_noticeOk" placeholder="신청 후 3일 이내 등록금 납부 시 최종 확정됩니다.">
+          </div>
+          <div class="fg" style="margin:0;">
+            <label class="fl">📋 대기신청 안내 <span style="font-weight:400;color:var(--muted)">— 정원 마감 시 표시</span></label>
+            <input class="fi" id="pt_noticeWait" placeholder="정원 마감 상태입니다. 자리가 생기면 안내드립니다.">
+          </div>
+        </div>
+      </div>
+
+      <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;padding:14px 18px;font-size:12px;color:#1e40af;line-height:1.8;">
+        ✅ <strong>저장하기</strong> 버튼을 누르면 <strong>수강신청_학부모.html</strong>에 즉시 반영됩니다.<br>
+        두 파일이 같은 폴더(동일 도메인)에 있어야 합니다.
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ 배포 가이드 ═══ -->
+  <div class="page" id="page-guide">
+    <div class="page-body">
+      <div class="page-hdr">
+        <div><div class="page-title">배포 가이드</div><div class="page-sub">처음 한 번만 설정하면 됩니다</div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-hdr"><div class="card-title">🌐 GitHub Pages 배포 (무료 · 추천)</div></div>
+        <div style="padding:22px;">
+          <div style="display:flex;flex-direction:column;gap:18px;">
+            <div style="display:flex;gap:14px;align-items:flex-start;">
+              <div style="width:28px;height:28px;border-radius:50%;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;">1</div>
+              <div><div style="font-size:13px;font-weight:700;margin-bottom:3px;">GitHub 계정 만들기</div><div style="font-size:12px;color:var(--muted);line-height:1.7;"><a href="https://github.com" target="_blank" style="color:var(--accent)">github.com</a> 접속 → Sign up → 무료 가입</div></div>
+            </div>
+            <div style="display:flex;gap:14px;align-items:flex-start;">
+              <div style="width:28px;height:28px;border-radius:50%;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;">2</div>
+              <div><div style="font-size:13px;font-weight:700;margin-bottom:3px;">새 저장소 만들기</div><div style="font-size:12px;color:var(--muted);line-height:1.7;">New repository → 이름 입력 → <strong>Add a README file</strong> 체크 → Create repository</div></div>
+            </div>
+            <div style="display:flex;gap:14px;align-items:flex-start;">
+              <div style="width:28px;height:28px;border-radius:50%;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;">3</div>
+              <div><div style="font-size:13px;font-weight:700;margin-bottom:3px;">두 파일 업로드</div><div style="font-size:12px;color:var(--muted);line-height:1.7;">저장소 페이지 → <strong>Add file → Upload files</strong><br><code style="background:#f1f5f9;padding:1px 6px;border-radius:4px;">수강신청_학부모.html</code>과 <code style="background:#f1f5f9;padding:1px 6px;border-radius:4px;">관리자.html</code> 두 파일을 같이 올리세요</div></div>
+            </div>
+            <div style="display:flex;gap:14px;align-items:flex-start;">
+              <div style="width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;">4</div>
+              <div><div style="font-size:13px;font-weight:700;margin-bottom:3px;">Pages 활성화</div><div style="font-size:12px;color:var(--muted);line-height:1.7;">Settings → Pages → Branch: <strong>main</strong> → Save<br>잠시 후 <code style="background:#f1f5f9;padding:1px 6px;border-radius:4px;">https://내계정.github.io/저장소명/</code> URL 생성 완료!</div></div>
+            </div>
+            <div style="display:flex;gap:14px;align-items:flex-start;">
+              <div style="width:28px;height:28px;border-radius:50%;background:#f97316;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;">5</div>
+              <div><div style="font-size:13px;font-weight:700;margin-bottom:3px;">카카오톡으로 공유</div><div style="font-size:12px;color:var(--muted);line-height:1.7;"><code style="background:#f1f5f9;padding:1px 6px;border-radius:4px;">https://내계정.github.io/저장소명/수강신청_학부모.html</code><br>이 URL을 학부모 단톡방에 공유하거나, 학부모 페이지의 <strong>카카오톡 공유 버튼</strong>으로 전송하세요.</div></div>
+            </div>
+          </div>
+          <div style="margin-top:22px;background:#fef9c3;border:1px solid #fde047;border-radius:10px;padding:13px 16px;font-size:12px;color:#713f12;line-height:1.7;">
+            💡 <strong>핵심:</strong> 두 파일을 같은 저장소(동일 도메인)에 올려야 localStorage가 공유됩니다.<br>
+            관리자 페이지에서 수정 → 저장하면 학부모 페이지에 <strong>즉시 반영</strong>됩니다.
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-hdr"><div class="card-title">🟡 카카오톡 공유 카드 설정 (선택)</div></div>
+        <div style="padding:22px;font-size:12px;color:var(--muted);line-height:1.8;">
+          앱 키 없이도 <strong>링크 복사</strong>로 공유됩니다. 카카오 공유 카드(미리보기 이미지 포함)를 원하시면:<br><br>
+          1. <a href="https://developers.kakao.com" target="_blank" style="color:var(--accent)">developers.kakao.com</a> → 내 애플리케이션 → 앱 추가<br>
+          2. 앱 키 → <strong>JavaScript 키</strong> 복사<br>
+          3. <code style="background:#f1f5f9;padding:1px 6px;border-radius:4px;">수강신청_학부모.html</code> 상단의 <code style="background:#f1f5f9;padding:1px 6px;border-radius:4px;">const KAKAO_KEY = ''</code> 에 붙여넣기<br>
+          4. 앱 설정 → 플랫폼 → Web → 사이트 도메인에 GitHub Pages 주소 등록
+        </div>
+      </div>
+    </div>
+  </div>
+</div><!-- /main -->
+
+<!-- ══ 강좌 모달 ══ -->
+<div class="overlay" id="courseOverlay" onclick="if(event.target===this)closeCourse()">
+  <div class="modal">
+    <div class="m-hdr">
+      <div class="m-title" id="courseModalTitle">새 강좌 추가</div>
+      <button class="m-close" onclick="closeCourse()">✕</button>
+    </div>
+    <div class="m-body">
+      <div class="form-row">
+        <div class="fg"><label class="fl">강좌명 <span class="req">*</span></label><input class="fi" id="f_name" placeholder="중등 수학 심화반"></div>
+        <div class="fg"><label class="fl">담당 선생님 <span class="req">*</span></label><input class="fi" id="f_teacher" placeholder="김민준"></div>
+      </div>
+      <div class="form-row">
+        <div class="fg">
+          <label class="fl">대상 학년 <span class="req">*</span></label>
+          <select class="fi" id="f_level">
+            <option value="">-- 선택 --</option>
+            <option>초등 4학년</option><option>초등 5학년</option><option>초등 6학년</option>
+            <option>중학교 1학년</option><option>중학교 2학년</option><option>중학교 3학년</option>
+            <option>고등학교 1학년</option><option>고등학교 2학년</option><option>고등학교 3학년</option>
+            <option>초등 4-5학년</option><option>초등 4-6학년</option><option>초등 5-6학년</option>
+            <option>중학교 1-2학년</option><option>중학교 1-3학년</option><option>중학교 2-3학년</option>
+            <option>고등학교 1-2학년</option><option>고등학교 1-3학년</option><option>고등학교 2-3학년</option>
+          </select>
+        </div>
+        <div class="fg"><label class="fl">강좌 설명</label><input class="fi" id="f_desc" placeholder="개념 + 심화"></div>
+      </div>
+      <div>
+        <div class="slot-area-hdr">
+          <div class="slot-area-title">🕐 시간대</div>
+          <button class="btn-add-slot" onclick="addSlot()">＋ 시간대 추가</button>
+        </div>
+        <div id="slotsContainer"></div>
+      </div>
+    </div>
+    <div class="m-foot">
+      <button class="btn-cancel" onclick="closeCourse()">취소</button>
+      <button class="btn-save" onclick="saveCourse()">저장하기</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 삭제 확인 모달 ══ -->
+<div class="overlay" id="confirmOverlay" onclick="if(event.target===this)closeConfirm()">
+  <div class="modal confirm-box">
+    <div class="conf-ico" id="confIco">🗑️</div>
+    <div class="conf-title" id="confTitle"></div>
+    <div class="conf-desc"  id="confDesc"></div>
+    <div class="conf-btns">
+      <button class="btn-cn" onclick="closeConfirm()">취소</button>
+      <button class="btn-cy" id="confYes">삭제</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════
+// ⚙️ 설정
+// ══════════════════════════════════════════
+const ADMIN_PW = '1234';           // 비밀번호 변경 가능
+
+// localStorage 키 (학부모 페이지와 동일)
+const KEY_TEXT    = 'ba_pageText';
+const KEY_COURSES = 'ba_courses';
+const KEY_APPS    = 'ba_applications';
+
+// 기본값
+const DEF_TEXT = {
+  logoMain:'Bright', logoEm:'Academy',
+  badge:'2025 SPRING · 수학',
+  title:'3월 신학기\\n수강신청',
+  subtitle:'원하시는 시간대를 선택하여 신청해 주세요',
+  semSmall:'2025 봄학기',
+  noticeOk:  '신청 후 3일 이내 등록금 납부 시 최종 확정됩니다.',
+  noticeWait:'정원 마감 상태입니다. 자리가 생기면 안내드립니다.',
+};
+const DEF_COURSES = [
+  {id:1,name:'중등 수학 심화반',teacher:'김민준',level:'중학교 1-2학년',desc:'개념 + 심화',
+   slots:[{id:'s1',days:['월','수','금'],start:'16:00',end:'18:00',capacity:20,enrolled:12},
+          {id:'s2',days:['화','목'],start:'17:00',end:'19:00',capacity:20,enrolled:18},
+          {id:'s3',days:['토'],start:'10:00',end:'12:00',capacity:20,enrolled:20}]},
+  {id:2,name:'초등 수학 기초반',teacher:'이수진',level:'초등 4-5학년',desc:'기초 개념 다지기',
+   slots:[{id:'s4',days:['월','수'],start:'14:00',end:'15:30',capacity:16,enrolled:9},
+          {id:'s5',days:['토'],start:'09:00',end:'11:00',capacity:16,enrolled:16}]},
+  {id:3,name:'고등 수학 수능반',teacher:'최현우',level:'고등학교 1-2학년',desc:'수능 대비 집중반',
+   slots:[{id:'s6',days:['월','수','금'],start:'19:00',end:'21:30',capacity:25,enrolled:15},
+          {id:'s7',days:['토','일'],start:'10:00',end:'14:00',capacity:25,enrolled:25}]},
+];
+
+const DAYS = ['월','화','수','목','금','토','일'];
+let editingId = null, slotCnt = 0;
+let applications = [], courses = [];
+
+// ── helpers ──
+function loadLS(key, def) {
+  try { return JSON.parse(localStorage.getItem(key)) || def; } catch(e){ return def; }
+}
+function saveLS(key, val) {
+  try { localStorage.setItem(key, JSON.stringify(val)); } catch(e){}
+}
+
+// ══════════════════════════════════════════
+// 로그인
+// ══════════════════════════════════════════
+function doLogin() {
+  if (document.getElementById('pwInput').value === ADMIN_PW) {
+    document.getElementById('loginWall').style.display = 'none';
+    initAll();
+  } else {
+    document.getElementById('loginErr').style.display = 'block';
+    document.getElementById('pwInput').value = '';
+  }
+}
+
+function initAll() {
+  courses = loadLS(KEY_COURSES, DEF_COURSES);
+  applications = loadLS(KEY_APPS, getDemoApps());
+  updateSidebarLogo();
+  goto('apps');
+}
+
+function getDemoApps() {
+  return [
+    {id:1,신청일시:'2025.03.01 14:22',강좌명:'중등 수학 심화반',시간대:'월·수·금 16:00–18:00',학생이름:'김지우',학년:'중학교 1학년',연락처:'010-1234-5678',유형:'수강신청',처리상태:'미확인'},
+    {id:2,신청일시:'2025.03.01 15:10',강좌명:'초등 수학 기초반',시간대:'월·수 14:00–15:30',학생이름:'이민준',학년:'초등 4학년',연락처:'010-2345-6789',유형:'수강신청',처리상태:'확인'},
+    {id:3,신청일시:'2025.03.02 09:30',강좌명:'중등 수학 심화반',시간대:'토 10:00–12:00',학생이름:'박소율',학년:'중학교 2학년',연락처:'010-3456-7890',유형:'대기신청',처리상태:'미확인'},
+    {id:4,신청일시:'2025.03.02 11:05',강좌명:'고등 수학 수능반',시간대:'월·수·금 19:00–21:30',학생이름:'최서준',학년:'고등학교 1학년',연락처:'010-4567-8901',유형:'수강신청',처리상태:'등록완료'},
+    {id:5,신청일시:'2025.03.03 08:50',강좌명:'초등 수학 기초반',시간대:'토 09:00–11:00',학생이름:'정하은',학년:'초등 5학년',연락처:'010-5678-9012',유형:'대기신청',처리상태:'미확인'},
+  ];
+}
+
+// ══════════════════════════════════════════
+// 페이지 전환
+// ══════════════════════════════════════════
+const PAGE_TITLES = { apps:'신청 현황', courses:'강좌 관리', pagetext:'페이지 문구 설정', guide:'배포 가이드' };
+const PAGE_ACTIONS = {
+  apps:     () => `<button class="btn-sec" onclick="refreshApps()">🔄 새로고침</button><button class="btn-sec" onclick="exportCSV()">📥 CSV 내보내기</button>`,
+  courses:  () => `<button class="btn-pri" onclick="openCourseModal()">＋ 새 강좌</button>`,
+  pagetext: () => `<button class="btn-pri btn-orange" onclick="savePageText()">💾 저장 · 즉시 반영</button>`,
+  guide:    () => '',
+};
+
+function goto(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  document.getElementById('nav-'  + page).classList.add('active');
+  document.getElementById('topbarTitle').textContent  = PAGE_TITLES[page] || '';
+  document.getElementById('topbarActions').innerHTML  = PAGE_ACTIONS[page]?.() || '';
+  if (page === 'apps')     renderApps();
+  if (page === 'courses')  renderCourses();
+  if (page === 'pagetext') initPageTextForm();
+}
+
+// ══════════════════════════════════════════
+// 신청 현황
+// ══════════════════════════════════════════
+function refreshApps() {
+  applications = loadLS(KEY_APPS, getDemoApps());
+  updateCourseFilter();
+  renderStats();
+  renderApps();
+  showToast('🔄 새로고침 완료');
+}
+
+function renderStats() {
+  const total = applications.length;
+  const applyN = applications.filter(a => a.유형==='수강신청').length;
+  const waitN  = applications.filter(a => a.유형==='대기신청').length;
+  const doneN  = applications.filter(a => a.처리상태==='등록완료').length;
+  document.getElementById('appStats').innerHTML = `
+    <div class="stat"><div class="stat-ico" style="background:var(--accent-bg)">📋</div><div><div class="stat-n" style="color:var(--accent)">${total}</div><div class="stat-l">전체 신청</div></div></div>
+    <div class="stat"><div class="stat-ico" style="background:var(--green-bg)">✅</div><div><div class="stat-n" style="color:var(--green)">${applyN}</div><div class="stat-l">수강신청</div></div></div>
+    <div class="stat"><div class="stat-ico" style="background:var(--amber-bg)">⏳</div><div><div class="stat-n" style="color:var(--amber)">${waitN}</div><div class="stat-l">대기신청</div></div></div>
+    <div class="stat"><div class="stat-ico" style="background:var(--green-bg)">🎓</div><div><div class="stat-n" style="color:var(--green)">${doneN}</div><div class="stat-l">등록완료</div></div></div>`;
+}
+
+function updateCourseFilter() {
+  const names = [...new Set(applications.map(a => a.강좌명))];
+  document.getElementById('fCourse').innerHTML = '<option value="">전체 강좌</option>' + names.map(n=>`<option>${n}</option>`).join('');
+}
+
+function renderApps() {
+  applications = loadLS(KEY_APPS, getDemoApps());
+  renderStats();
+  updateCourseFilter();
+  const fT = document.getElementById('fType').value;
+  const fS = document.getElementById('fStatus').value;
+  const fC = document.getElementById('fCourse').value;
+  const fQ = document.getElementById('fSearch').value.toLowerCase();
+  const list = applications.filter(a =>
+    (!fT || a.유형===fT) && (!fS || a.처리상태===fS) &&
+    (!fC || a.강좌명===fC) && (!fQ || a.학생이름?.includes(fQ) || a.연락처?.includes(fQ))
+  );
+  document.getElementById('appCount').textContent = `· ${list.length}건`;
+  if (!list.length) {
+    document.getElementById('appTable').innerHTML = `<tr><td colspan="9"><div class="empty"><div class="empty-ico">📭</div><div class="empty-txt">신청 내역이 없습니다.</div></div></td></tr>`;
+    return;
+  }
+  document.getElementById('appTable').innerHTML = list.map(a => `
+    <tr>
+      <td style="font-size:11px;color:var(--muted);white-space:nowrap">${a.신청일시}</td>
+      <td><span class="badge b-${a.유형}">${a.유형}</span></td>
+      <td class="td-b">${a.강좌명}</td>
+      <td style="font-size:11px;white-space:nowrap">${a.시간대}</td>
+      <td class="td-b">${a.학생이름}</td>
+      <td style="font-size:11px">${a.학년}</td>
+      <td><a href="tel:${a.연락처}" style="color:var(--accent);font-weight:600;font-size:12px">${a.연락처}</a></td>
+      <td>
+        <select class="fsel" style="font-size:11px;padding:4px 7px;" onchange="changeStatus(${a.id},this.value)">
+          ${['미확인','확인','등록완료','거절'].map(s=>`<option${s===a.처리상태?' selected':''}>${s}</option>`).join('')}
+        </select>
+      </td>
+      <td><button class="btn-sm btn-del" onclick="deleteApp(${a.id})">삭제</button></td>
+    </tr>`).join('');
+}
+
+function changeStatus(id, status) {
+  const a = applications.find(x => x.id===id);
+  if (!a) return;
+  a.처리상태 = status;
+  saveLS(KEY_APPS, applications);
+  showToast(`✅ ${a.학생이름}님 → ${status}`);
+}
+
+function deleteApp(id) {
+  const a = applications.find(x => x.id===id);
+  openConfirm('삭제', `"${a?.학생이름}"님 신청을 삭제할까요?`, '삭제 후 복구할 수 없습니다.', () => {
+    applications = applications.filter(x => x.id!==id);
+    saveLS(KEY_APPS, applications);
+    renderApps();
+    showToast('🗑️ 삭제되었습니다.');
+  });
+}
+
+function exportCSV() {
+  if (!applications.length) { showToast('⚠️ 내보낼 데이터가 없습니다.'); return; }
+  const h = ['신청일시','강좌명','시간대','학생이름','학년','연락처','유형','처리상태'];
+  const rows = applications.map(a => h.map(k => `"${(a[k]||'').toString().replace(/"/g,'""')}"`).join(','));
+  const csv = '\uFEFF' + [h.join(','), ...rows].join('\n');
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const el = document.createElement('a');
+  el.href = URL.createObjectURL(blob);
+  el.download = `수강신청_${new Date().toLocaleDateString('ko-KR').replace(/\.\s/g,'-').replace('.','')}.csv`;
+  el.click();
+  showToast('📥 CSV 저장 완료');
+}
+
+// ══════════════════════════════════════════
+// 강좌 관리
+// ══════════════════════════════════════════
+function renderCourses() {
+  courses = loadLS(KEY_COURSES, DEF_COURSES);
+  document.getElementById('courseCount').textContent = `· ${courses.length}개`;
+  if (!courses.length) {
+    document.getElementById('courseTable').innerHTML = `<tr><td colspan="6"><div class="empty"><div class="empty-ico">📭</div><div class="empty-txt">강좌를 추가해 주세요.</div></div></td></tr>`;
+    return;
+  }
+  document.getElementById('courseTable').innerHTML = courses.map(c => {
+    const totE = c.slots.reduce((a,s) => a+s.enrolled, 0);
+    const totC = c.slots.reduce((a,s) => a+s.capacity, 0);
+    const pct  = totC ? Math.round(totE/totC*100) : 0;
+    const fc   = pct>=100?'#ef4444':pct>=85?'#f59e0b':'#22c55e';
+    const slots = c.slots.map(s => {
+      const p2 = Math.round(s.enrolled/s.capacity*100);
+      const fc2 = p2>=100?'#ef4444':p2>=85?'#f59e0b':'#22c55e';
+      const d  = Array.isArray(s.days) ? s.days.join('·') : s.days;
+      return `<div style="font-size:11px;color:var(--muted);margin-bottom:2px;">
+        <span style="font-weight:600;color:var(--ink)">${d}</span> ${s.start}–${s.end}
+        <span style="color:${fc2};font-weight:600;">(${s.enrolled}/${s.capacity})</span></div>`;
+    }).join('');
+    return `<tr>
+      <td class="td-b">${c.name}<div style="font-size:11px;color:var(--muted);margin-top:1px;">${c.desc}</div></td>
+      <td style="font-size:12px">${c.level}</td>
+      <td style="font-size:12px;font-weight:500">${c.teacher} 선생님</td>
+      <td>${slots}</td>
+      <td><div class="cap-cell">
+        <div class="cap-n" style="color:${fc}">${totE}/${totC}명 (${pct}%)</div>
+        <div class="cap-bar"><div class="cap-f" style="width:${Math.min(pct,100)}%;background:${fc}"></div></div>
+      </div></td>
+      <td><div style="display:flex;gap:6px">
+        <button class="btn-sm btn-edit" onclick="openCourseModal(${c.id})">수정</button>
+        <button class="btn-sm btn-del"  onclick="confirmDelCourse(${c.id})">삭제</button>
+      </div></td></tr>`;
+  }).join('');
+}
+
+function openCourseModal(id) {
+  editingId = id || null;
+  document.getElementById('courseModalTitle').textContent = id ? '강좌 수정' : '새 강좌 추가';
+  if (id) {
+    const c = courses.find(x => x.id===id);
+    document.getElementById('f_name').value    = c.name;
+    document.getElementById('f_teacher').value = c.teacher;
+    document.getElementById('f_level').value   = c.level;
+    document.getElementById('f_desc').value    = c.desc || '';
+    document.getElementById('slotsContainer').innerHTML = '';
+    c.slots.forEach(s => addSlot(s));
+  } else {
+    ['f_name','f_teacher','f_desc'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('f_level').value = '';
+    document.getElementById('slotsContainer').innerHTML = '';
+    addSlot();
+  }
+  document.getElementById('courseOverlay').classList.add('open');
+}
+function closeCourse() { document.getElementById('courseOverlay').classList.remove('open'); }
+
+function addSlot(data) {
+  const sid = 'sl_' + (++slotCnt);
+  const sel = data?.days || [];
+  const div = document.createElement('div');
+  div.className = 'slot-item'; div.dataset.sid = sid;
+  div.innerHTML = `
+    <button class="slot-del" onclick="removeSlot(this)" title="삭제">✕</button>
+    <div style="font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.5px;margin-bottom:9px;">TIME SLOT</div>
+    <div class="fg" style="margin-bottom:9px;">
+      <label class="fl">요일</label>
+      <div class="days-wrap">${DAYS.map(d=>`
+        <input type="checkbox" class="d-cb" id="${sid}_${d}" ${sel.includes(d)?'checked':''}>
+        <label class="d-lbl" for="${sid}_${d}">${d}</label>`).join('')}
+      </div>
+    </div>
+    <div class="slot-row">
+      <div class="fg" style="margin:0"><label class="fl">시작 시간</label><input type="time" class="fi s-start" value="${data?.start||'16:00'}"></div>
+      <div class="fg" style="margin:0"><label class="fl">종료 시간</label><input type="time" class="fi s-end"   value="${data?.end||'18:00'}"></div>
+    </div>
+    <div class="slot-row" style="margin-top:9px">
+      <div class="fg" style="margin:0"><label class="fl">정원 (명)</label><input type="number" class="fi s-cap" value="${data?.capacity||20}" min="1" max="999"></div>
+      <div class="fg" style="margin:0"><label class="fl">현재 등록</label><input type="number" class="fi s-enr" value="${data?.enrolled||0}" min="0"></div>
+    </div>`;
+  document.getElementById('slotsContainer').appendChild(div);
+}
+
+function removeSlot(btn) {
+  const container = document.getElementById('slotsContainer');
+  if (container.children.length <= 1) { showToast('⚠️ 최소 1개 이상 필요합니다.'); return; }
+  btn.closest('.slot-item').remove();
+}
+
+function saveCourse() {
+  const name    = document.getElementById('f_name').value.trim();
+  const teacher = document.getElementById('f_teacher').value.trim();
+  const level   = document.getElementById('f_level').value;
+  const desc    = document.getElementById('f_desc').value.trim();
+  if (!name||!teacher||!level) { showToast('⚠️ 필수 항목을 입력해 주세요.'); return; }
+
+  let err = false;
+  const slots = [...document.querySelectorAll('.slot-item')].map(el => {
+    const days  = DAYS.filter(d => el.querySelector(`[id$="_${d}"]`)?.checked);
+    const start = el.querySelector('.s-start').value;
+    const end   = el.querySelector('.s-end').value;
+    const cap   = parseInt(el.querySelector('.s-cap').value) || 0;
+    const enr   = parseInt(el.querySelector('.s-enr').value) || 0;
+    if (!days.length || !start || !end) { err = true; }
+    return { id:'s'+Date.now()+Math.random().toString(36).slice(2,5), days, start, end, capacity:cap, enrolled:enr };
+  });
+  if (err)       { showToast('⚠️ 시간대의 요일·시간을 입력해 주세요.'); return; }
+  if (!slots.length) { showToast('⚠️ 시간대를 1개 이상 추가하세요.'); return; }
+
+  if (editingId) {
+    const i = courses.findIndex(c => c.id===editingId);
+    courses[i] = { ...courses[i], name, teacher, level, desc, slots };
+    showToast('✅ 강좌가 수정되었습니다.');
+  } else {
+    courses.push({ id: Date.now(), name, teacher, level, desc, slots });
+    showToast('🎉 강좌가 추가되었습니다.');
+  }
+  saveLS(KEY_COURSES, courses);
+  closeCourse();
+  renderCourses();
+}
+
+function confirmDelCourse(id) {
+  const c = courses.find(x => x.id===id);
+  openConfirm('삭제', `"${c?.name}" 강좌를 삭제할까요?`, '시간대·정원 정보가 모두 삭제됩니다.', () => {
+    courses = courses.filter(x => x.id!==id);
+    saveLS(KEY_COURSES, courses);
+    renderCourses();
+    showToast('🗑️ 강좌가 삭제되었습니다.');
+  });
+}
+
+// ══════════════════════════════════════════
+// 페이지 문구 설정
+// ══════════════════════════════════════════
+function initPageTextForm() {
+  const t = loadLS(KEY_TEXT, DEF_TEXT);
+  document.getElementById('pt_main').value  = t.logoMain  || DEF_TEXT.logoMain;
+  document.getElementById('pt_em').value    = t.logoEm    || DEF_TEXT.logoEm;
+  document.getElementById('pt_small').value = t.semSmall  || DEF_TEXT.semSmall;
+  document.getElementById('pt_chip').value  = t.badge     || DEF_TEXT.badge;
+  document.getElementById('pt_title').value = t.title     || DEF_TEXT.title;
+  document.getElementById('pt_sub').value        = t.subtitle   || DEF_TEXT.subtitle;
+  document.getElementById('pt_noticeOk').value   = t.noticeOk   || DEF_TEXT.noticeOk;
+  document.getElementById('pt_noticeWait').value = t.noticeWait || DEF_TEXT.noticeWait;
+  livePreview();
+}
+
+function livePreview() {
+  const v = getPTValues();
+  document.getElementById('pv_main').textContent  = v.logoMain;
+  document.getElementById('pv_em').textContent    = v.logoEm;
+  document.getElementById('pv_small').textContent = v.semSmall;
+  document.getElementById('pv_chip').textContent  = v.badge;
+  document.getElementById('pv_title').textContent = v.title.replace(/\\n/g, '\n');
+  document.getElementById('pv_sub').textContent   = v.subtitle;
+}
+
+function getPTValues() {
+  return {
+    logoMain: document.getElementById('pt_main')?.value  || DEF_TEXT.logoMain,
+    logoEm:   document.getElementById('pt_em')?.value    || DEF_TEXT.logoEm,
+    semSmall: document.getElementById('pt_small')?.value || DEF_TEXT.semSmall,
+    badge:    document.getElementById('pt_chip')?.value  || DEF_TEXT.badge,
+    title:    document.getElementById('pt_title')?.value || DEF_TEXT.title,
+    subtitle:    document.getElementById('pt_sub')?.value        || DEF_TEXT.subtitle,
+    noticeOk:    document.getElementById('pt_noticeOk')?.value    || DEF_TEXT.noticeOk,
+    noticeWait:  document.getElementById('pt_noticeWait')?.value  || DEF_TEXT.noticeWait,
+  };
+}
+
+function savePageText() {
+  const v = getPTValues();
+  saveLS(KEY_TEXT, v);
+  updateSidebarLogo();
+  showToast('✅ 저장 완료! 수강신청 페이지에 즉시 반영됩니다.');
+}
+
+function updateSidebarLogo() {
+  const t = loadLS(KEY_TEXT, DEF_TEXT);
+  document.getElementById('sbLogoName').innerHTML =
+    `${t.logoMain||'Bright'}<em>${t.logoEm||'Academy'}</em>`;
+}
+
+// ══════════════════════════════════════════
+// 확인 모달
+// ══════════════════════════════════════════
+let confirmCb = null;
+function openConfirm(ico, title, desc, cb) {
+  document.getElementById('confIco').textContent   = ico === '삭제' ? '🗑️' : ico;
+  document.getElementById('confTitle').textContent = title;
+  document.getElementById('confDesc').textContent  = desc;
+  confirmCb = cb;
+  document.getElementById('confYes').onclick = () => { closeConfirm(); if(confirmCb) confirmCb(); };
+  document.getElementById('confirmOverlay').classList.add('open');
+}
+function closeConfirm() { document.getElementById('confirmOverlay').classList.remove('open'); }
+
+// ══════════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════════
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+// storage 이벤트 감지 (학부모가 신청하면 자동 카운트 갱신)
+window.addEventListener('storage', e => {
+  if (e.key === KEY_APPS && document.querySelector('#page-apps.active')) renderApps();
+});
+</script>
+</body>
+</html>

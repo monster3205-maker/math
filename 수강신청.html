@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title id="pageTitle">수강신청</title>
+<script src="https://developers.kakao.com/sdk/js/kakao.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;900&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --primary: #1e293b;
+  --accent: #f97316;
+  --accent2: #3b82f6;
+  --bg: #f8fafc;
+  --card: #ffffff;
+  --border: #e2e8f0;
+  --muted: #64748b;
+  --green: #16a34a;
+  --green-bg: #dcfce7;
+  --amber: #d97706;
+  --amber-bg: #fef3c7;
+  --red: #dc2626;
+  --red-bg: #fee2e2;
+  --kakao: #FEE500;
+  --kakao-fg: #191600;
+  --radius: 16px;
+  --shadow: 0 1px 3px rgba(0,0,0,.06), 0 4px 16px rgba(0,0,0,.06);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Noto Sans KR', sans-serif; background:var(--bg); color:var(--primary); min-height:100vh; }
+
+/* ─── HEADER ─── */
+.hdr {
+  background: var(--primary);
+  height: 54px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 20px;
+  position: sticky; top:0; z-index: 300;
+}
+.hdr-logo { color:#fff; font-size:16px; font-weight:700; letter-spacing:-.3px; }
+.hdr-logo em { color: var(--accent); font-style:normal; }
+.hdr-right { font-size:11px; color:rgba(255,255,255,.4); font-weight:500; }
+
+/* ─── HERO ─── */
+.hero {
+  position: relative;
+  background: var(--primary);
+  padding: 40px 20px 36px;
+  color: #fff;
+  overflow: hidden;
+}
+.hero-bg {
+  position: absolute; inset:0;
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 60%, #1e3a5f 100%);
+}
+.hero-glow {
+  position: absolute;
+  width: 300px; height: 300px;
+  background: radial-gradient(circle, rgba(249,115,22,.25) 0%, transparent 70%);
+  top: -60px; right: -60px;
+  border-radius: 50%;
+}
+.hero-glow2 {
+  position: absolute;
+  width: 200px; height: 200px;
+  background: radial-gradient(circle, rgba(59,130,246,.2) 0%, transparent 70%);
+  bottom: -40px; left: 10%;
+  border-radius: 50%;
+}
+.hero-content { position: relative; z-index:1; text-align: center; }
+.hero-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(249,115,22,.15);
+  border: 1px solid rgba(249,115,22,.4);
+  color: #fb923c;
+  padding: 5px 14px; border-radius:999px;
+  font-size:11px; font-weight:700; letter-spacing:1px;
+  margin-bottom: 16px;
+}
+.hero-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 32px; font-weight:900;
+  line-height: 1.25;
+  margin-bottom: 10px;
+  white-space: pre-line;
+}
+.hero-sub { font-size:13px; color:rgba(255,255,255,.65); line-height:1.6; }
+
+/* ─── WRAP ─── */
+.wrap { max-width: 560px; margin: 0 auto; padding: 24px 14px 110px; }
+
+/* ─── SECTION LABEL ─── */
+.sec-lbl {
+  font-size:10px; font-weight:700; letter-spacing:2px;
+  color: var(--muted); margin: 28px 0 12px;
+  display: flex; align-items: center; gap:8px;
+}
+.sec-lbl::after { content:''; flex:1; height:1px; background:var(--border); }
+
+/* ─── COURSE CARD ─── */
+.course-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  border: 1.5px solid var(--border);
+  margin-bottom: 14px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  animation: fadeUp .3s ease both;
+}
+@keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+.c-head {
+  padding: 16px 18px 13px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: flex-start; justify-content: space-between;
+}
+.c-name { font-size:15px; font-weight:700; margin-bottom:2px; }
+.c-meta { font-size:11px; color:var(--muted); }
+.c-teacher-tag {
+  background: var(--bg); border:1px solid var(--border);
+  border-radius:999px; padding:3px 10px;
+  font-size:11px; font-weight:600; color:var(--muted);
+  white-space: nowrap;
+}
+
+/* ─── SLOT ─── */
+.slot {
+  display:flex; align-items:center; gap:10px;
+  padding: 13px 18px;
+  border-bottom: 1px dashed var(--border);
+  transition: background .12s;
+}
+.slot:last-child { border-bottom:none; }
+.slot:hover { background: #f8fafc; }
+.slot-l { flex:1; min-width:0; }
+.s-days { font-size:10px; font-weight:700; color:var(--muted); letter-spacing:.5px; margin-bottom:1px; }
+.s-time { font-size:14px; font-weight:700; color:var(--primary); }
+.slot-r { display:flex; flex-direction:column; align-items:flex-end; gap:5px; flex-shrink:0; }
+
+.pill { font-size:10px; font-weight:700; padding:3px 9px; border-radius:999px; }
+.pill-ok   { background:var(--green-bg); color:var(--green); }
+.pill-warn { background:var(--amber-bg); color:var(--amber); }
+.pill-full { background:var(--red-bg);   color:var(--red); }
+
+.cap-row { display:flex; align-items:center; gap:6px; }
+.cap-num { font-size:10px; color:var(--muted); font-weight:500; white-space:nowrap; }
+.cap-track { width:60px; height:3px; background:var(--border); border-radius:999px; overflow:hidden; }
+.cap-fill { height:3px; border-radius:999px; transition:width .4s; }
+
+.slot-btn {
+  padding: 7px 14px; border-radius:9px;
+  font-family:'Noto Sans KR',sans-serif;
+  font-size:12px; font-weight:700;
+  cursor:pointer; border:none;
+  transition: all .15s; white-space:nowrap;
+}
+.sb-go { background:var(--primary); color:#fff; }
+.sb-go:hover { background:#334155; transform:translateY(-1px); }
+.sb-wait { background:#eff6ff; color:var(--accent2); border:1.5px solid #bfdbfe; }
+.sb-wait:hover { background:var(--accent2); color:#fff; }
+
+/* ─── BOTTOM SHEET ─── */
+.overlay {
+  display:none; position:fixed; inset:0;
+  background:rgba(0,0,0,.45); z-index:900;
+  align-items:flex-end; justify-content:center;
+}
+.overlay.open { display:flex; animation:fdIn .15s; }
+@keyframes fdIn { from{opacity:0} to{opacity:1} }
+
+.sheet {
+  background:#fff; border-radius:22px 22px 0 0;
+  width:100%; max-width:560px;
+  max-height:92vh; overflow-y:auto;
+  animation:sheetUp .28s cubic-bezier(.32,1.2,.5,1);
+}
+@keyframes sheetUp { from{transform:translateY(80px);opacity:0} to{transform:translateY(0);opacity:1} }
+.drag-bar { width:36px; height:4px; background:#e2e8f0; border-radius:999px; margin:13px auto 0; }
+.sh-hdr { padding:16px 22px 13px; border-bottom:1px solid var(--border); }
+.sh-title { font-size:17px; font-weight:700; }
+.sh-sub { font-size:12px; color:var(--muted); margin-top:2px; }
+.sh-body { padding:20px 22px; }
+.sh-foot { padding:0 22px 30px; }
+
+.info-box { background:var(--bg); border-radius:12px; padding:13px 15px; margin-bottom:15px; }
+.ir { display:flex; justify-content:space-between; font-size:12px; padding:5px 0; border-bottom:1px dashed var(--border); }
+.ir:last-child { border-bottom:none; }
+.ir .lbl { color:var(--muted); }
+.ir .val { font-weight:600; }
+
+.notice {
+  border-radius:10px; padding:11px 13px;
+  font-size:12px; line-height:1.7; margin-bottom:15px;
+}
+.n-ok   { background:#fffbeb; border:1px solid #fde68a; color:#78350f; }
+.n-wait { background:#eff6ff; border:1px solid #bfdbfe; color:#1e40af; }
+
+.fg { margin-bottom:14px; }
+.fg:last-child { margin-bottom:0; }
+.fl { display:block; font-size:11px; font-weight:700; color:var(--muted); margin-bottom:5px; letter-spacing:.2px; }
+.fl .req { color:var(--red); }
+.fi {
+  width:100%; padding:11px 13px;
+  border:1.5px solid var(--border); border-radius:10px;
+  font-family:'Noto Sans KR',sans-serif; font-size:14px; color:var(--primary);
+  background:#fafafa; outline:none; transition:border-color .15s, background .15s;
+  -webkit-appearance:none;
+}
+.fi:focus { border-color:var(--accent); background:#fff; }
+
+.sub-btn {
+  width:100%; padding:15px; border:none; border-radius:12px;
+  font-family:'Noto Sans KR',sans-serif; font-size:15px; font-weight:700;
+  cursor:pointer; transition:all .2s; letter-spacing:.2px;
+}
+.sub-ok { background:var(--primary); color:#fff; }
+.sub-ok:hover { background:#334155; }
+.sub-wait { background:#f97316; color:#fff; }
+.sub-wait:hover { background:#ea580c; }
+.sub-btn:disabled { opacity:.55; cursor:not-allowed; transform:none !important; }
+
+/* ─── SUCCESS SCREEN ─── */
+.success {
+  display:none; position:fixed; inset:0; background:#fff;
+  z-index:1000; flex-direction:column;
+  align-items:center; justify-content:center;
+  padding:40px; text-align:center;
+}
+.success.open { display:flex; }
+.s-icon { font-size:64px; margin-bottom:16px; animation:pop .45s cubic-bezier(.32,1.4,.5,1); }
+@keyframes pop { 0%{transform:scale(0)} 70%{transform:scale(1.12)} 100%{transform:scale(1)} }
+.s-title { font-family:'Playfair Display',serif; font-size:26px; font-weight:900; margin-bottom:8px; }
+.s-desc { font-size:13px; color:var(--muted); line-height:1.8; margin-bottom:32px; }
+
+.kakao-btn {
+  display:flex; align-items:center; justify-content:center; gap:9px;
+  background:var(--kakao); color:var(--kakao-fg);
+  border:none; border-radius:12px; padding:14px 24px;
+  font-family:'Noto Sans KR',sans-serif; font-size:14px; font-weight:700;
+  cursor:pointer; width:100%; max-width:340px; margin:0 auto 10px;
+  transition:opacity .15s; box-shadow:0 2px 12px rgba(254,229,0,.4);
+}
+.kakao-btn:hover { opacity:.9; }
+.back-btn {
+  background:none; border:1.5px solid var(--border); border-radius:12px;
+  padding:12px 24px; font-family:'Noto Sans KR',sans-serif;
+  font-size:13px; font-weight:600; cursor:pointer; color:var(--muted);
+  width:100%; max-width:340px; display:block; margin:0 auto;
+}
+
+/* ─── FLOAT KAKAO ─── */
+.float-kakao {
+  position:fixed; bottom:22px; right:16px;
+  background:var(--kakao); color:var(--kakao-fg);
+  border:none; border-radius:999px;
+  padding:11px 18px 11px 14px;
+  font-family:'Noto Sans KR',sans-serif; font-size:13px; font-weight:700;
+  cursor:pointer; display:flex; align-items:center; gap:7px;
+  box-shadow:0 4px 20px rgba(0,0,0,.15); z-index:400;
+  animation:bounceIn .5s .8s both;
+}
+@keyframes bounceIn { from{transform:scale(0);opacity:0} 80%{transform:scale(1.05)} to{transform:scale(1);opacity:1} }
+
+/* ─── EMPTY / LOADING ─── */
+.list-empty { text-align:center; padding:60px 20px; color:var(--muted); }
+.list-empty .e-icon { font-size:48px; margin-bottom:12px; opacity:.5; }
+.list-empty p { font-size:13px; }
+.spinner { width:32px; height:32px; border:3px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin .7s linear infinite; margin:0 auto 12px; }
+@keyframes spin { to{transform:rotate(360deg)} }
+
+/* ─── TOAST ─── */
+.toast {
+  position:fixed; bottom:80px; left:50%;
+  transform:translateX(-50%) translateY(14px);
+  background:var(--primary); color:#fff;
+  padding:10px 20px; border-radius:999px;
+  font-size:12px; font-weight:600; z-index:9999;
+  opacity:0; transition:all .28s; white-space:nowrap; pointer-events:none;
+}
+.toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="hdr-logo" id="hdrLogo"></div>
+  <div class="hdr-right" id="hdrRight"></div>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-glow2"></div>
+  <div class="hero-content">
+    <div class="hero-chip" id="heroChip"></div>
+    <div class="hero-title" id="heroTitle"></div>
+    <div class="hero-sub" id="heroSub"></div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="wrap">
+  <div class="sec-lbl">수학 강좌</div>
+  <div id="courseList">
+    <div style="text-align:center;padding:50px 0;">
+      <div class="spinner"></div>
+      <div style="color:var(--muted);font-size:13px;">강좌 정보를 불러오는 중...</div>
+    </div>
+  </div>
+</div>
+
+<!-- 플로팅 카카오 공유 -->
+<button class="float-kakao" onclick="shareKakao()">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--kakao-fg)"><path d="M12 3C6.477 3 2 6.477 2 11c0 2.946 1.653 5.516 4.125 7.06L5.25 21.75l4.313-2.344C10.156 19.797 11.063 20 12 20c5.523 0 10-3.477 10-9S17.523 3 12 3z"/></svg>
+  카카오톡 공유
+</button>
+
+<!-- 신청 바텀 시트 -->
+<div class="overlay" id="overlay" onclick="if(event.target===this)closeSheet()">
+  <div class="sheet">
+    <div class="drag-bar"></div>
+    <div class="sh-hdr">
+      <div class="sh-title" id="shTitle"></div>
+      <div class="sh-sub" id="shSub"></div>
+    </div>
+    <div class="sh-body">
+      <div class="info-box" id="shInfo"></div>
+      <div id="shNotice"></div>
+      <div class="fg">
+        <label class="fl">학생 이름 <span class="req">*</span></label>
+        <input class="fi" id="fName" type="text" placeholder="홍길동" autocomplete="off">
+      </div>
+      <div class="fg">
+        <label class="fl">학년 <span class="req">*</span></label>
+        <select class="fi" id="fGrade">
+          <option value="">-- 선택 --</option>
+          <option>초등 4학년</option><option>초등 5학년</option><option>초등 6학년</option>
+          <option>중학교 1학년</option><option>중학교 2학년</option><option>중학교 3학년</option>
+          <option>고등학교 1학년</option><option>고등학교 2학년</option><option>고등학교 3학년</option>
+        </select>
+      </div>
+
+    </div>
+    <div class="sh-foot">
+      <button class="sub-btn" id="subBtn" onclick="submitApply()">신청하기</button>
+    </div>
+  </div>
+</div>
+
+<!-- 완료 화면 -->
+<div class="success" id="successScr">
+  <div class="s-icon" id="sIcon">🎉</div>
+  <div class="s-title" id="sTitle">신청 완료!</div>
+  <div class="s-desc" id="sDesc"></div>
+  <button class="kakao-btn" onclick="shareKakao()">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="var(--kakao-fg)"><path d="M12 3C6.477 3 2 6.477 2 11c0 2.946 1.653 5.516 4.125 7.06L5.25 21.75l4.313-2.344C10.156 19.797 11.063 20 12 20c5.523 0 10-3.477 10-9S17.523 3 12 3z"/></svg>
+    다른 학부모님께 카카오톡 공유
+  </button>
+  <button class="back-btn" onclick="closeSuccess()">돌아가기</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════
+// 공유 스토리지 키 (관리자 페이지와 동일)
+// ══════════════════════════════════════════
+const KEY_TEXT    = 'ba_pageText';
+const KEY_COURSES = 'ba_courses';
+const KEY_APPS    = 'ba_applications';
+const KAKAO_KEY   = ''; // 카카오 앱 키 (선택)
+
+// ── 기본값 ──
+const DEF_TEXT = {
+  logoMain: 'Bright', logoEm: 'Academy',
+  badge: '2025 SPRING · 수학',
+  title: '3월 신학기\n수강신청',
+  subtitle: '원하시는 시간대를 선택하여 신청해 주세요',
+  semSmall: '2025 봄학기',
+  noticeOk:   '신청 후 3일 이내 등록금 납부 시 최종 확정됩니다.',
+  noticeWait: '정원 마감 상태입니다. 자리가 생기면 안내드립니다.',
+};
+
+const DEF_COURSES = [
+  { id:1, name:'중등 수학 심화반', level:'중학교 1-2학년', teacher:'김민준', desc:'개념 + 심화',
+    slots:[
+      {id:'s1',days:['월','수','금'],start:'16:00',end:'18:00',capacity:20,enrolled:12},
+      {id:'s2',days:['화','목'],start:'17:00',end:'19:00',capacity:20,enrolled:18},
+      {id:'s3',days:['토'],start:'10:00',end:'12:00',capacity:20,enrolled:20},
+    ]},
+  { id:2, name:'초등 수학 기초반', level:'초등 4-5학년', teacher:'이수진', desc:'기초 개념 다지기',
+    slots:[
+      {id:'s4',days:['월','수'],start:'14:00',end:'15:30',capacity:16,enrolled:9},
+      {id:'s5',days:['토'],start:'09:00',end:'11:00',capacity:16,enrolled:16},
+    ]},
+  { id:3, name:'고등 수학 수능반', level:'고등학교 1-2학년', teacher:'최현우', desc:'수능 대비 집중반',
+    slots:[
+      {id:'s6',days:['월','수','금'],start:'19:00',end:'21:30',capacity:25,enrolled:15},
+      {id:'s7',days:['토','일'],start:'10:00',end:'14:00',capacity:25,enrolled:25},
+    ]},
+];
+
+// ── 데이터 로드 ──
+function loadText() {
+  try { return JSON.parse(localStorage.getItem(KEY_TEXT)) || DEF_TEXT; } catch(e){ return DEF_TEXT; }
+}
+function loadCourses() {
+  try { return JSON.parse(localStorage.getItem(KEY_COURSES)) || DEF_COURSES; } catch(e){ return DEF_COURSES; }
+}
+function loadApps() {
+  try { return JSON.parse(localStorage.getItem(KEY_APPS)) || []; } catch(e){ return []; }
+}
+function saveApps(apps) {
+  try { localStorage.setItem(KEY_APPS, JSON.stringify(apps)); } catch(e){}
+}
+
+// ── 페이지 문구 적용 ──
+function applyText() {
+  const t = loadText();
+  document.title = (t.logoMain||'') + (t.logoEm||'') + ' 수강신청';
+  document.getElementById('hdrLogo').innerHTML =
+    `<span style="color:#fff">${t.logoMain||''}</span><em style="color:var(--accent)">${t.logoEm||''}</em>`;
+  document.getElementById('hdrRight').textContent = t.semSmall || '';
+  document.getElementById('heroChip').textContent  = t.badge || '';
+  document.getElementById('heroTitle').textContent = (t.title||'').replace(/\\n/g, '\n');
+  document.getElementById('heroSub').textContent   = t.subtitle || '';
+}
+
+// ── 강좌 렌더링 ──
+let courses = [];
+function renderCourses() {
+  courses = loadCourses();
+  const el = document.getElementById('courseList');
+  if (!courses.length) {
+    el.innerHTML = `<div class="list-empty"><div class="e-icon">📭</div><p>등록된 강좌가 없습니다.</p></div>`;
+    return;
+  }
+  el.innerHTML = courses.map((c, ci) => {
+    const slotsHtml = c.slots.map(s => {
+      const pct  = Math.round(s.enrolled / s.capacity * 100);
+      const full = s.enrolled >= s.capacity;
+      const warn = !full && pct >= 80;
+      const pillCls  = full ? 'pill-full' : warn ? 'pill-warn' : 'pill-ok';
+      const pillTxt  = full ? '정원 마감' : `잔여 ${s.capacity - s.enrolled}석`;
+      const fillColor= full ? '#dc2626' : warn ? '#d97706' : '#16a34a';
+      const daysStr  = Array.isArray(s.days) ? s.days.join('·') : s.days;
+      return `
+        <div class="slot">
+          <div class="slot-l">
+            <div class="s-days">${daysStr}</div>
+            <div class="s-time">${s.start} – ${s.end}</div>
+          </div>
+          <div class="slot-r">
+            <span class="pill ${pillCls}">${pillTxt}</span>
+            <div class="cap-row">
+              <span class="cap-num">${s.enrolled}/${s.capacity}</span>
+              <div class="cap-track"><div class="cap-fill" style="width:${Math.min(pct,100)}%;background:${fillColor}"></div></div>
+            </div>
+            <button class="slot-btn ${full?'sb-wait':'sb-go'}"
+              onclick="openSheet(${c.id},'${s.id}','${c.name}','${daysStr} ${s.start}–${s.end}',${s.enrolled},${s.capacity},${full})">
+              ${full ? '대기신청' : '신청하기'}
+            </button>
+          </div>
+        </div>`;
+    }).join('');
+    return `<div class="course-card" style="animation-delay:${ci*0.06}s">
+      <div class="c-head">
+        <div>
+          <div class="c-name">${c.name}</div>
+          <div class="c-meta">${c.level} · ${c.desc}</div>
+        </div>
+        <div class="c-teacher-tag">${c.teacher} 선생님</div>
+      </div>
+      ${slotsHtml}
+    </div>`;
+  }).join('');
+}
+
+// ── 신청 바텀 시트 ──
+let cur = {};
+function openSheet(cid, sid, cname, stime, enrolled, cap, isFull) {
+  cur = { cid, sid, cname, stime, enrolled, cap, isFull };
+  const rem = cap - enrolled;
+  document.getElementById('shTitle').textContent = isFull ? '⏳ 대기 신청' : '📝 수강신청';
+  document.getElementById('shSub').textContent   = cname;
+  document.getElementById('shInfo').innerHTML    = `
+    <div class="ir"><span class="lbl">강좌</span><span class="val">${cname}</span></div>
+    <div class="ir"><span class="lbl">시간</span><span class="val">${stime}</span></div>
+    <div class="ir"><span class="lbl">현황</span><span class="val" style="color:${isFull?'var(--amber)':'var(--green)'}">
+      ${enrolled}/${cap}명 · ${isFull?'대기 접수 가능':'잔여 '+rem+'석'}
+    </span></div>`;
+  const _t = loadText();
+  document.getElementById('shNotice').innerHTML = isFull
+    ? `<div class="notice n-wait">📋 <strong>대기 안내:</strong> ${_t.noticeWait || DEF_TEXT.noticeWait}</div>`
+    : `<div class="notice n-ok">✅ <strong>신청 안내:</strong> ${_t.noticeOk || DEF_TEXT.noticeOk}</div>`;
+  const btn = document.getElementById('subBtn');
+  btn.textContent = isFull ? '대기 신청하기' : '신청하기';
+  btn.className   = 'sub-btn ' + (isFull ? 'sub-wait' : 'sub-ok');
+  btn.disabled    = false;
+  ['fName','fGrade'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeSheet() {
+  document.getElementById('overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// ── 제출 ──
+function submitApply() {
+  const name  = document.getElementById('fName').value.trim();
+  const grade = document.getElementById('fGrade').value;
+  if (!name)  { showToast('⚠️ 학생 이름을 입력해 주세요.'); return; }
+  if (!grade) { showToast('⚠️ 학년을 선택해 주세요.'); return; }
+
+  const btn = document.getElementById('subBtn');
+  btn.textContent = '처리 중...'; btn.disabled = true;
+
+  const record = {
+    id: Date.now(),
+    신청일시: new Date().toLocaleString('ko-KR'),
+    강좌명: cur.cname,
+    시간대: cur.stime,
+    학생이름: name,
+    학년: grade,
+    유형: cur.isFull ? '대기신청' : '수강신청',
+    처리상태: '미확인',
+  };
+
+  // localStorage에 저장 (관리자 페이지와 공유)
+  const apps = loadApps();
+  apps.push(record);
+  saveApps(apps);
+
+  // 정원 업데이트
+  if (!cur.isFull) {
+    const c = courses.find(x => x.id === cur.cid);
+    const s = c?.slots.find(x => x.id === cur.sid);
+    if (s) s.enrolled++;
+    try { localStorage.setItem(KEY_COURSES, JSON.stringify(courses)); } catch(e){}
+  }
+
+  closeSheet();
+  renderCourses();
+  showSuccess(name);
+}
+
+function showSuccess(name) {
+  const isWait = cur.isFull;
+  document.getElementById('sIcon').textContent  = isWait ? '📋' : '🎉';
+  document.getElementById('sTitle').textContent = isWait ? '대기 신청 완료!' : '수강신청 완료!';
+  document.getElementById('sDesc').innerHTML = isWait
+    ? `<strong>${name}</strong>님의 대기 신청이 완료되었습니다.<br>자리가 생기면 등록하신 번호로 연락드립니다.<br><br>주변 학부모님께도 알려주세요 🙏`
+    : `<strong>${name}</strong>님의 수강신청이 완료되었습니다.<br>${loadText().noticeOk || DEF_TEXT.noticeOk}<br><br>주변 학부모님께도 알려주세요 🙏`;
+  document.getElementById('successScr').classList.add('open');
+}
+function closeSuccess() { document.getElementById('successScr').classList.remove('open'); }
+
+// ── 카카오 공유 ──
+if (KAKAO_KEY) { try { Kakao.init(KAKAO_KEY); } catch(e){} }
+
+function shareKakao() {
+  const url = window.location.href;
+  const t   = loadText();
+  const name = (t.logoMain||'') + (t.logoEm||'');
+  if (KAKAO_KEY && typeof Kakao !== 'undefined' && Kakao.isInitialized()) {
+    Kakao.Share.sendDefault({
+      objectType: 'feed',
+      content: {
+        title: `[${name}] ${t.badge || '수강신청 안내'}`,
+        description: t.subtitle || '수강신청이 시작되었습니다.',
+        imageUrl: 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=800&q=80',
+        link: { mobileWebUrl: url, webUrl: url },
+      },
+      buttons: [{ title: '수강신청 하기', link: { mobileWebUrl: url, webUrl: url } }],
+    });
+  } else {
+    if (navigator.share) {
+      navigator.share({ title: name + ' 수강신청', url });
+    } else {
+      navigator.clipboard.writeText(url)
+        .then(() => showToast('📋 링크 복사 완료! 카카오톡에 붙여넣으세요.'))
+        .catch(() => showToast('링크: ' + url));
+    }
+  }
+}
+
+// ── TOAST ──
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ── INIT ──
+applyText();
+renderCourses();
+
+// storage 변경 감지 (같은 탭에서 관리자가 변경하면 자동 반영)
+window.addEventListener('storage', (e) => {
+  if (e.key === KEY_TEXT)    applyText();
+  if (e.key === KEY_COURSES) renderCourses();
+});
+</script>
+</body>
+</html>
