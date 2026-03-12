@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>15Q20M Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f2f2f7;
+  --bg2: #ffffff;
+  --bg3: #f2f2f7;
+  --fg: #1c1c1e;
+  --fg2: #3a3a3c;
+  --fg3: #636366;
+  --fg4: #aeaeb2;
+  --sep: rgba(60,60,67,.12);
+  --sep2: rgba(60,60,67,.06);
+  --blue: #007aff;
+  --blue-d: #0062cc;
+  --green: #34c759;
+  --orange: #ff9500;
+  --red: #ff3b30;
+  --purple: #af52de;
+  --fill: rgba(120,120,128,.12);
+  --fill2: rgba(120,120,128,.08);
+  --card-shadow: 0 2px 8px rgba(0,0,0,.06), 0 0 0 .5px rgba(0,0,0,.04);
+  --card-shadow-hover: 0 8px 24px rgba(0,0,0,.10), 0 0 0 .5px rgba(0,0,0,.06);
+  --warm: #34c759; --core: #007aff; --concept: #ff9500;
+  --apply: #ff3b30; --master: #af52de;
+}
+* { margin:0; padding:0; box-sizing:border-box; -webkit-font-smoothing:antialiased; }
+body {
+  font-family: 'Noto Sans KR', -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* HEADER */
+.topbar {
+  background: rgba(242,242,247,.85);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: .5px solid var(--sep);
+  padding: 0 24px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.topbar-brand { display: flex; align-items: center; gap: 10px; }
+.brand-pill {
+  background: var(--blue);
+  color: white;
+  font-weight: 700;
+  font-size: 13px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  letter-spacing: -.01em;
+}
+.brand-title { font-size: 15px; font-weight: 600; color: var(--fg); letter-spacing: -.02em; }
+.topbar-meta { font-size: 12px; color: var(--fg4); }
+
+/* LAYOUT */
+.layout {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 0;
+  flex: 1;
+  min-height: 0;
+}
+
+/* SIDEBAR */
+.sidebar {
+  background: var(--bg2);
+  border-right: .5px solid var(--sep);
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 52px);
+  position: sticky;
+  top: 52px;
+  overflow-y: auto;
+}
+.sidebar-inner {
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+}
+
+.sec-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--fg4);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  margin: 4px 4px -4px;
+}
+
+.card {
+  background: var(--bg2);
+  border-radius: 14px;
+  border: .5px solid var(--sep);
+  box-shadow: var(--card-shadow);
+  overflow: hidden;
+  transition: box-shadow .2s;
+}
+.card-body { padding: 14px 16px; }
+
+/* Grade */
+.grade-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.grade-seg {
+  padding: 8px 4px;
+  border-radius: 9px;
+  border: none;
+  background: var(--fill);
+  color: var(--fg2);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .18s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+}
+.grade-seg small { font-size: 10px; font-weight: 400; color: var(--fg4); }
+.grade-seg:hover { background: rgba(0,122,255,.12); }
+.grade-seg.on { background: var(--blue); color: white; box-shadow: 0 2px 8px rgba(0,122,255,.28); }
+.grade-seg.on small { color: rgba(255,255,255,.7); }
+
+/* Day input */
+.day-input-wrap { display: flex; align-items: center; gap: 10px; }
+.day-label-box { font-size: 12px; color: var(--fg3); min-width: 28px; }
+.day-input {
+  flex: 1;
+  height: 40px;
+  border-radius: 10px;
+  border: .5px solid var(--sep);
+  background: var(--fill2);
+  font-family: inherit;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--fg);
+  text-align: center;
+  outline: none;
+  transition: all .18s;
+  padding: 0 12px;
+  -moz-appearance: textfield;
+}
+.day-input::-webkit-inner-spin-button,
+.day-input::-webkit-outer-spin-button { -webkit-appearance: none; }
+.day-input:focus {
+  border-color: var(--blue);
+  background: rgba(0,122,255,.05);
+  box-shadow: 0 0 0 3px rgba(0,122,255,.14);
+}
+.day-stepper { display: flex; flex-direction: column; gap: 3px; }
+.day-step-btn {
+  width: 26px; height: 18px;
+  border: .5px solid var(--sep);
+  border-radius: 6px;
+  background: var(--fill);
+  color: var(--fg3);
+  font-size: 11px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .12s;
+}
+.day-step-btn:hover { background: var(--blue); color: white; border-color: var(--blue); }
+.day-step-btn:active { transform: scale(.92); }
+
+/* Topic chip */
+.topic-chip { background: var(--bg3); border-radius: 10px; padding: 12px 14px; }
+.topic-chip .tc-day { font-size: 11px; color: var(--fg4); margin-bottom: 3px; letter-spacing: .02em; }
+.topic-chip .tc-name { font-size: 15px; font-weight: 700; color: var(--fg); margin-bottom: 2px; }
+.topic-chip .tc-obj { font-size: 12px; color: var(--fg3); }
+.topic-chip .tc-unit {
+  display: inline-block;
+  margin-top: 7px;
+  font-size: 11px; font-weight: 600; color: var(--blue);
+  background: rgba(0,122,255,.10);
+  padding: 2px 8px; border-radius: 20px;
+}
+
+/* Zone rows */
+.zone-rows { display: flex; flex-direction: column; gap: 5px; }
+.zone-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 10px; border-radius: 9px; background: var(--fill2);
+}
+.zone-dot { width: 8px; height: 8px; border-radius: 3px; flex-shrink: 0; }
+.zone-nm { flex: 1; font-size: 12px; font-weight: 500; color: var(--fg2); }
+.zone-rng { font-size: 11px; color: var(--fg4); font-variant-numeric: tabular-nums; }
+
+/* Generate button */
+.gen-btn {
+  height: 50px;
+  border-radius: 13px;
+  border: none;
+  background: var(--blue);
+  color: white;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .2s;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  letter-spacing: -.01em;
+  box-shadow: 0 4px 14px rgba(0,122,255,.32);
+  position: relative;
+  overflow: hidden;
+}
+.gen-btn::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(rgba(255,255,255,.12), transparent);
+  border-radius: inherit;
+}
+.gen-btn:hover:not(:disabled) { background: var(--blue-d); box-shadow: 0 6px 20px rgba(0,122,255,.40); transform: translateY(-1px); }
+.gen-btn:active:not(:disabled) { transform: scale(.97); }
+.gen-btn:disabled { background: var(--fill); color: var(--fg4); box-shadow: none; cursor: not-allowed; }
+.gen-btn .spin {
+  display: none;
+  width: 18px; height: 18px;
+  border: 2px solid rgba(255,255,255,.4);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+}
+.gen-btn.loading .spin { display: block; }
+.gen-btn.loading .gen-txt { display: none; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* History */
+.hist-list { display: flex; flex-direction: column; gap: 3px; max-height: 120px; overflow-y: auto; }
+.hist-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 10px; border-radius: 9px; cursor: pointer; transition: background .15s;
+}
+.hist-item:hover { background: var(--fill); }
+.hist-g {
+  font-size: 11px; font-weight: 700; color: var(--blue);
+  background: rgba(0,122,255,.10); border-radius: 5px;
+  padding: 2px 6px; white-space: nowrap;
+}
+.hist-topic { font-size: 12px; color: var(--fg2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hist-empty { font-size: 12px; color: var(--fg4); padding: 8px 4px; }
+
+/* MAIN */
+.main { height: calc(100vh - 52px); overflow-y: auto; display: flex; flex-direction: column; }
+
+.empty {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 12px; color: var(--fg4); padding: 40px; text-align: center;
+}
+.empty-icon {
+  width: 72px; height: 72px; background: var(--fill); border-radius: 20px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 32px; margin-bottom: 4px;
+}
+.empty h3 { font-size: 18px; font-weight: 600; color: var(--fg2); }
+.empty p { font-size: 14px; color: var(--fg4); line-height: 1.6; max-width: 300px; }
+
+/* Output tabs */
+.out-header {
+  background: rgba(242,242,247,.9);
+  backdrop-filter: blur(16px);
+  border-bottom: .5px solid var(--sep);
+  padding: 0 24px;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 10;
+}
+.tab-list { display: flex; gap: 0; }
+.tab-btn {
+  height: 44px; padding: 0 16px;
+  border: none; background: none;
+  font-family: inherit; font-size: 13px; font-weight: 500;
+  color: var(--fg4); cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all .15s; letter-spacing: -.01em;
+}
+.tab-btn:hover { color: var(--fg2); }
+.tab-btn.on { color: var(--blue); border-bottom-color: var(--blue); font-weight: 600; }
+
+.out-actions { display: flex; gap: 6px; }
+.a-btn {
+  height: 28px; padding: 0 12px; border-radius: 7px;
+  border: .5px solid var(--sep); background: var(--bg2);
+  font-family: inherit; font-size: 12px; font-weight: 500;
+  color: var(--fg2); cursor: pointer; transition: all .15s;
+}
+.a-btn:hover { background: var(--blue); color: white; border-color: var(--blue); }
+
+.out-body { padding: 24px; flex: 1; }
+.tab-section { display: none; }
+.tab-section.on { display: block; }
+
+/* 15Q20M SHEET */
+.sheet {
+  background: white; border-radius: 16px;
+  border: .5px solid var(--sep); box-shadow: var(--card-shadow-hover);
+  overflow: hidden; max-width: 780px; margin: 0 auto;
+}
+.sh-head {
+  background: var(--fg); color: white;
+  padding: 20px 28px 18px;
+  display: flex; justify-content: space-between; align-items: flex-end;
+}
+.sh-prog { font-size: 10px; letter-spacing: .12em; color: rgba(255,255,255,.35); margin-bottom: 5px; font-weight: 500; }
+.sh-title { font-size: 22px; font-weight: 700; letter-spacing: -.03em; }
+.sh-title span { color: #ffd60a; }
+.sh-sub { font-size: 12px; color: rgba(255,255,255,.45); margin-top: 4px; }
+.sh-pills { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+.sh-pill {
+  font-size: 11px; font-weight: 600; color: rgba(255,255,255,.5);
+  background: rgba(255,255,255,.08); border: .5px solid rgba(255,255,255,.12);
+  padding: 3px 10px; border-radius: 20px;
+}
+
+.sh-info {
+  background: #f9f9f9; border-bottom: .5px solid #e5e5ea;
+  padding: 10px 28px; display: flex; gap: 24px; font-size: 13px; color: #636366;
+}
+.sh-field { display: flex; align-items: center; gap: 8px; }
+.sh-line { display: inline-block; width: 88px; border-bottom: 1px solid #c7c7cc; height: 14px; }
+
+.sh-obj {
+  margin: 16px 28px 0;
+  padding: 10px 14px;
+  background: rgba(0,122,255,.06); border: .5px solid rgba(0,122,255,.18);
+  border-radius: 10px; font-size: 13px; color: #0051a8;
+}
+.sh-obj strong { font-size: 10px; letter-spacing: .06em; font-weight: 700; }
+
+.zone-lbl {
+  margin: 14px 28px 6px;
+  display: flex; align-items: center; gap: 8px;
+  font-size: 10px; font-weight: 700; letter-spacing: .08em; color: #aeaeb2;
+}
+.zone-lbl::after { content:''; flex:1; height:.5px; background:#e5e5ea; }
+.z-badge { padding: 2px 8px; border-radius: 5px; font-size: 10px; font-weight: 700; color: white; }
+
+.q-grid { display: grid; grid-template-columns: 1fr 1fr; margin: 0 28px; }
+.q-grid.s1 { grid-template-columns: 1fr; }
+.q-item {
+  padding: 10px 10px 10px 0;
+  border-bottom: .5px solid #e5e5ea;
+  display: flex; align-items: flex-start; gap: 10px;
+  font-size: 14px; min-height: 42px;
+}
+.q-item:nth-child(odd):not(.full) { padding-right: 18px; border-right: .5px solid #e5e5ea; }
+.q-num {
+  min-width: 24px; height: 24px; border-radius: 50%;
+  color: white; font-size: 11px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; margin-top: 1px;
+}
+.q-text { flex: 1; line-height: 1.6; color: #1c1c1e; }
+.a-blank {
+  display: inline-block;
+  border-bottom: 1px solid #1c1c1e;
+  min-width: 48px; height: 14px; vertical-align: bottom;
+}
+.a-blank.w { min-width: 80px; }
+
+.master-wrap {
+  margin: 10px 28px 22px;
+  border: 1px solid rgba(175,82,222,.25); border-radius: 12px;
+  overflow: hidden; box-shadow: 0 2px 10px rgba(175,82,222,.12);
+}
+.master-hd {
+  background: var(--master); color: white;
+  padding: 8px 16px; display: flex; align-items: center; gap: 10px;
+  font-size: 12px; font-weight: 700; letter-spacing: .04em;
+}
+.master-n {
+  background: white; color: var(--master);
+  width: 24px; height: 24px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 800;
+}
+.master-bd {
+  padding: 14px 20px 18px;
+  background: #fdf8ff; font-size: 14px; line-height: 1.75; color: #2c0040;
+}
+.master-space {
+  margin-top: 12px; height: 60px; border-radius: 8px;
+  border: .5px dashed rgba(175,82,222,.3); background: white;
+  display: flex; align-items: center; justify-content: center;
+  color: #d4b8e0; font-size: 12px;
+}
+
+.sh-footer {
+  margin: 0 28px;
+  padding: 10px 0 18px;
+  display: flex; justify-content: flex-end; align-items: center;
+  border-top: .5px solid #e5e5ea; margin-top: 4px;
+  gap: 20px; font-size: 12px; color: #aeaeb2;
+}
+.score-box {
+  border: .5px solid #c7c7cc; border-radius: 8px;
+  padding: 6px 16px; font-weight: 600; font-size: 13px; color: #1c1c1e;
+}
+
+/* Answer sheet */
+.ans-card {
+  background: white; border-radius: 16px;
+  border: .5px solid var(--sep); box-shadow: var(--card-shadow-hover);
+  overflow: hidden; max-width: 780px; margin: 0 auto;
+}
+.ans-hd { background: var(--green); color: white; padding: 14px 28px; font-size: 18px; font-weight: 700; letter-spacing: -.02em; }
+.ans-grid { display: grid; grid-template-columns: repeat(5,1fr); margin: 16px 28px; gap: 0; }
+.ans-cell { border: .5px solid #e5e5ea; padding: 10px 8px; text-align: center; }
+.ans-n { font-size: 10px; color: #aeaeb2; margin-bottom: 3px; }
+.ans-v { font-weight: 700; font-size: 14px; letter-spacing: -.01em; }
+
+.err-tbl { width: calc(100% - 56px); margin: 0 28px 24px; border-collapse: collapse; font-size: 13px; }
+.err-tbl th, .err-tbl td { border: .5px solid #e5e5ea; padding: 8px 12px; text-align: left; }
+.err-tbl th { background: #f9f9f9; font-weight: 600; font-size: 12px; }
+
+/* Analysis */
+.analysis-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; max-width: 780px; margin: 0 auto; }
+.ana-card { background: white; border: .5px solid var(--sep); border-radius: 14px; box-shadow: var(--card-shadow); overflow: hidden; }
+.ana-card.full { grid-column: 1 / -1; }
+.ana-hd { background: var(--bg3); padding: 10px 16px; font-size: 12px; font-weight: 600; color: var(--fg3); border-bottom: .5px solid var(--sep); }
+.ana-bd { padding: 14px 16px; font-size: 13px; line-height: 1.75; color: var(--fg2); }
+.ana-bd ul { padding-left: 16px; }
+.ana-bd li { margin-bottom: 4px; }
+
+/* Overlay */
+.overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(242,242,247,.8); backdrop-filter: blur(20px);
+  z-index: 999; flex-direction: column; align-items: center; justify-content: center; gap: 20px;
+}
+.overlay.show { display: flex; }
+.ov-card {
+  background: white; border-radius: 20px;
+  border: .5px solid var(--sep); box-shadow: 0 20px 60px rgba(0,0,0,.12);
+  padding: 32px 40px;
+  display: flex; flex-direction: column; align-items: center; gap: 16px;
+  min-width: 280px; text-align: center;
+}
+.ov-spin {
+  width: 36px; height: 36px;
+  border: 3px solid rgba(0,122,255,.15); border-top-color: var(--blue);
+  border-radius: 50%; animation: spin .7s linear infinite;
+}
+.ov-title { font-size: 17px; font-weight: 700; color: var(--fg); }
+.ov-sub { font-size: 13px; color: var(--fg4); }
+.ov-bar-wrap { width: 200px; height: 3px; background: var(--fill); border-radius: 2px; overflow: hidden; }
+.ov-bar { height: 100%; background: var(--blue); border-radius: 2px; animation: prog 2s ease-in-out infinite; }
+@keyframes prog { 0%{width:5%} 50%{width:75%} 100%{width:92%} }
+
+@media print {
+  .topbar, .sidebar, .out-header, .out-actions, .tab-list { display: none !important; }
+  .layout { display: block; }
+  .main { height: auto; }
+  .out-body { padding: 0; }
+  .tab-section { display: block !important; }
+  .sheet, .ans-card { box-shadow: none; border: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="overlay" id="overlay">
+  <div class="ov-card">
+    <div class="ov-spin"></div>
+    <div class="ov-title">문항 생성 중</div>
+    <div class="ov-bar-wrap"><div class="ov-bar"></div></div>
+    <div class="ov-sub" id="ovSub">AI가 15문제를 설계하고 있습니다…</div>
+  </div>
+</div>
+
+<div class="topbar">
+  <div class="topbar-brand">
+    <div class="brand-pill">15Q20M</div>
+    <div class="brand-title">AI 문항 생성기</div>
+  </div>
+  <div class="topbar-meta">커리큘럼 맵 연동 · Grade 3–6 · Day 1–100</div>
+</div>
+
+<div class="layout">
+<aside class="sidebar">
+<div class="sidebar-inner">
+
+  <div class="sec-label">학년</div>
+  <div class="card"><div class="card-body">
+    <div class="grade-row">
+      <button class="grade-seg" onclick="setGrade(3,this)">3<small>학년</small></button>
+      <button class="grade-seg on" onclick="setGrade(4,this)">4<small>학년</small></button>
+      <button class="grade-seg" onclick="setGrade(5,this)">5<small>학년</small></button>
+      <button class="grade-seg" onclick="setGrade(6,this)">6<small>학년</small></button>
+    </div>
+  </div></div>
+
+  <div class="sec-label">Day</div>
+  <div class="card"><div class="card-body">
+    <div class="day-input-wrap">
+      <div class="day-label-box">Day</div>
+      <input class="day-input" type="number" id="dayInput" min="1" max="100" value="1"
+        oninput="clampDay()" onchange="updatePreview()">
+      <div class="day-stepper">
+        <button class="day-step-btn" onclick="stepDay(1)">▲</button>
+        <button class="day-step-btn" onclick="stepDay(-1)">▼</button>
+      </div>
+    </div>
+  </div></div>
+
+  <div class="sec-label">오늘의 주제</div>
+  <div class="card"><div class="card-body">
+    <div class="topic-chip" id="topicChip">
+      <div class="tc-day">Grade 4 · Day 1</div>
+      <div class="tc-name">두자리×한자리 기초</div>
+      <div class="tc-obj">받아올림 없는 곱셈</div>
+      <div class="tc-unit">곱셈</div>
+    </div>
+  </div></div>
+
+  <div class="sec-label">문제 구성</div>
+  <div class="card"><div class="card-body">
+    <div class="zone-rows">
+      <div class="zone-row"><div class="zone-dot" style="background:#34c759"></div><div class="zone-nm">워밍업 연산</div><div class="zone-rng">Q1~5</div></div>
+      <div class="zone-row"><div class="zone-dot" style="background:#007aff"></div><div class="zone-nm">핵심 연산</div><div class="zone-rng">Q6~10</div></div>
+      <div class="zone-row"><div class="zone-dot" style="background:#ff9500"></div><div class="zone-nm">개념 확인</div><div class="zone-rng">Q11~13</div></div>
+      <div class="zone-row"><div class="zone-dot" style="background:#ff3b30"></div><div class="zone-nm">응용 문장제</div><div class="zone-rng">Q14</div></div>
+      <div class="zone-row"><div class="zone-dot" style="background:#af52de"></div><div class="zone-nm">⭐ Master Problem</div><div class="zone-rng">Q15</div></div>
+    </div>
+  </div></div>
+
+  <button class="gen-btn" id="genBtn" onclick="generate()">
+    <span class="gen-txt">✦ 문항 생성하기</span>
+    <div class="spin"></div>
+  </button>
+
+  <div class="sec-label">생성 기록</div>
+  <div class="card"><div class="card-body" style="padding:8px 10px">
+    <div class="hist-list" id="histList">
+      <div class="hist-empty">아직 생성된 문항이 없습니다.</div>
+    </div>
+  </div></div>
+
+</div>
+</aside>
+
+<main class="main" id="mainArea">
+  <div class="empty" id="emptyState">
+    <div class="empty-icon">📝</div>
+    <h3>문항을 생성해보세요</h3>
+    <p>학년과 Day를 선택하고<br>「문항 생성하기」를 누르면<br>15Q20M 형식 시험지가 완성됩니다.</p>
+  </div>
+
+  <div id="outputWrap" style="display:none;flex-direction:column;flex:1">
+    <div class="out-header">
+      <div class="tab-list">
+        <button class="tab-btn on" onclick="showTab('tSheet',this)">📄 시험지</button>
+        <button class="tab-btn" onclick="showTab('tAnswer',this)">✅ 정답지</button>
+        <button class="tab-btn" onclick="showTab('tAnalysis',this)">📊 분석</button>
+      </div>
+      <div class="out-actions">
+        <button class="a-btn" onclick="window.print()">🖨 인쇄</button>
+        <button class="a-btn" onclick="copyTxt()">복사</button>
+        <button class="a-btn" onclick="generate()">재생성</button>
+      </div>
+    </div>
+    <div class="out-body">
+      <div id="tSheet" class="tab-section on"></div>
+      <div id="tAnswer" class="tab-section"></div>
+      <div id="tAnalysis" class="tab-section"></div>
+    </div>
+  </div>
+</main>
+</div>
+
+<script>
+const CUR = {
+  3:{
+    1:{t:'몇십×몇',o:'10,20…×한자리수',u:'곱셈'},2:{t:'두자리×한자리기초',o:'받아올림없는곱셈',u:'곱셈'},
+    3:{t:'두자리×한자리받아올림①',o:'일의자리받아올림',u:'곱셈'},4:{t:'두자리×한자리받아올림②',o:'십의자리받아올림',u:'곱셈'},
+    5:{t:'두자리×한자리심화',o:'받아올림2회',u:'곱셈'},6:{t:'세로계산완성',o:'세로형식숙달',u:'곱셈'},
+    7:{t:'곱셈문장제①',o:'1단계문장제',u:'곱셈'},8:{t:'곱셈문장제②',o:'2단계문장제',u:'곱셈'},
+    9:{t:'곱셈종합연습',o:'전유형혼합',u:'곱셈'},10:{t:'세자리×한자리기초',o:'받아올림없음',u:'곱셈'},
+    11:{t:'세자리×한자리받아올림',o:'받아올림1~2회',u:'곱셈'},12:{t:'세자리×한자리심화',o:'연속받아올림',u:'곱셈'},
+    13:{t:'곱셈대소비교',o:'두식크기비교',u:'곱셈'},14:{t:'곱셈역산',o:'□×▲=■역산',u:'곱셈'},
+    15:{t:'곱셈혼합문장제',o:'2단계이상',u:'곱셈'},16:{t:'곱셈복습①',o:'두자리×한자리재확인',u:'복습'},
+    17:{t:'곱셈복습②',o:'세자리×한자리재확인',u:'복습'},18:{t:'곱셈실전①',o:'시험형식15문제',u:'모의'},
+    19:{t:'두자리×두자리기초',o:'받아올림없음',u:'곱셈'},20:{t:'두자리×두자리받아올림',o:'단계적받아올림',u:'곱셈'},
+    21:{t:'두자리×두자리심화',o:'연속받아올림',u:'곱셈'},22:{t:'곱셈마스터테스트',o:'UNIT1종합평가',u:'모의'},
+    23:{t:'나눗셈기초',o:'곱셈과나눗셈관계',u:'나눗셈'},24:{t:'나머지없는나눗셈①',o:'÷2,÷3',u:'나눗셈'},
+    25:{t:'나머지없는나눗셈②',o:'÷4,÷5,÷6',u:'나눗셈'},26:{t:'나머지없는나눗셈③',o:'÷7,÷8,÷9',u:'나눗셈'},
+    27:{t:'나머지있는나눗셈①',o:'나머지개념',u:'나눗셈'},28:{t:'나머지있는나눗셈②',o:'나머지범위확인',u:'나눗셈'},
+    29:{t:'두자리÷한자리①',o:'몫이한자리',u:'나눗셈'},30:{t:'두자리÷한자리②',o:'몫이두자리',u:'나눗셈'},
+    31:{t:'나눗셈검산',o:'나눗셈↔곱셈검산',u:'나눗셈'},32:{t:'나눗셈복습',o:'전유형복습',u:'복습'},
+    33:{t:'세자리÷한자리①',o:'나머지없음',u:'나눗셈'},34:{t:'세자리÷한자리②',o:'나머지있음',u:'나눗셈'},
+    35:{t:'나눗셈문장제①',o:'1단계문장제',u:'나눗셈'},36:{t:'나눗셈문장제②',o:'2단계문장제',u:'나눗셈'},
+    37:{t:'나눗셈□구하기',o:'□÷▲=■역산',u:'나눗셈'},38:{t:'나눗셈복습②',o:'오답유형집중',u:'복습'},
+    39:{t:'나눗셈실전',o:'시험형식15문제',u:'모의'},40:{t:'곱셈·나눗셈혼합',o:'두연산연결',u:'나눗셈'},
+    41:{t:'나눗셈마스터',o:'UNIT2종합평가',u:'모의'},42:{t:'단원1·2종합복습',o:'오답중심',u:'복습'},
+    43:{t:'분수기초',o:'단위분수,진분수',u:'분수'},44:{t:'분수크기비교',o:'같은분모비교',u:'분수'},
+    45:{t:'단위분수비교',o:'분모클수록작다',u:'분수'},46:{t:'동분모덧셈①',o:'합이1이하',u:'분수'},
+    47:{t:'동분모덧셈②',o:'합이1이상→대분수',u:'분수'},48:{t:'동분모뺄셈①',o:'자연수에서분수빼기',u:'분수'},
+    49:{t:'동분모뺄셈②',o:'대분수뺄셈',u:'분수'},50:{t:'분수문장제①',o:'덧셈문장제',u:'분수'},
+    51:{t:'분수문장제②',o:'뺄셈문장제',u:'분수'},52:{t:'분수복습',o:'전유형복습',u:'복습'},
+    53:{t:'분수와소수연결',o:'0.1=1/10이해',u:'분수'},54:{t:'분수실전',o:'시험형식',u:'모의'},
+    55:{t:'분수마스터',o:'UNIT3종합',u:'모의'},56:{t:'분수오답집중',o:'약점재도전',u:'복습'},
+    57:{t:'분수종합①',o:'덧뺄셈혼합',u:'분수'},58:{t:'분수종합②',o:'문장제심화',u:'분수'},
+    59:{t:'분수종합③',o:'비교·역산혼합',u:'분수'},60:{t:'중간점검',o:'오답중심',u:'복습'},
+    61:{t:'길이단위',o:'단위변환',u:'측정'},62:{t:'길이계산',o:'덧셈·뺄셈',u:'측정'},
+    63:{t:'시간단위',o:'단위변환',u:'측정'},64:{t:'시간계산①',o:'덧셈',u:'측정'},
+    65:{t:'시간계산②',o:'뺄셈',u:'측정'},66:{t:'무게단위',o:'단위변환',u:'측정'},
+    67:{t:'무게계산',o:'덧셈·뺄셈',u:'측정'},68:{t:'들이단위',o:'단위변환·계산',u:'측정'},
+    69:{t:'측정문장제',o:'혼합단위',u:'측정'},70:{t:'측정복습',o:'전유형복습',u:'복습'},
+    71:{t:'측정실전',o:'시험형식',u:'모의'},72:{t:'원개념',o:'중심·지름·반지름',u:'도형'},
+    73:{t:'도형둘레',o:'삼각형·사각형',u:'도형'},74:{t:'도형복습',o:'측정+도형통합',u:'복습'},
+    75:{t:'소수개념',o:'소수첫째자리',u:'소수'},76:{t:'소수읽기',o:'소수표현',u:'소수'},
+    77:{t:'소수크기비교',o:'소수점자리비교',u:'소수'},78:{t:'소수덧셈①',o:'받아올림없음',u:'소수'},
+    79:{t:'소수덧셈②',o:'받아올림있음',u:'소수'},80:{t:'소수뺄셈①',o:'받아내림없음',u:'소수'},
+    81:{t:'소수뺄셈②',o:'받아내림있음',u:'소수'},82:{t:'소수문장제',o:'덧뺄셈문장제',u:'소수'},
+    83:{t:'소수복습',o:'전유형복습',u:'복습'},84:{t:'소수실전',o:'시험형식',u:'모의'},
+    85:{t:'소수↔분수변환',o:'0.1=1/10활용',u:'소수'},86:{t:'소수마스터',o:'UNIT5종합',u:'모의'},
+    87:{t:'단원4·5복습',o:'오답중심',u:'복습'},88:{t:'UNIT1총복습',o:'곱셈재점검',u:'복습'},
+    89:{t:'UNIT2총복습',o:'나눗셈재점검',u:'복습'},90:{t:'UNIT3총복습',o:'분수재점검',u:'복습'},
+    91:{t:'UNIT4·5총복습',o:'측정·소수재점검',u:'복습'},92:{t:'모의시험①',o:'1~30일범위',u:'모의'},
+    93:{t:'오답분석①',o:'모의①오답',u:'복습'},94:{t:'모의시험②',o:'31~60일범위',u:'모의'},
+    95:{t:'오답분석②',o:'모의②오답',u:'복습'},96:{t:'모의시험③',o:'61~87일범위',u:'모의'},
+    97:{t:'오답분석③',o:'모의③오답',u:'복습'},98:{t:'종합모의시험',o:'전범위',u:'모의'},
+    99:{t:'최종오답완성',o:'약점집중',u:'복습'},100:{t:'🏆DAY100마스터',o:'최종챌린지',u:'모의'},
+  },
+  4:{
+    1:{t:'두자리×한자리기초',o:'받아올림없는곱셈',u:'곱셈'},2:{t:'두자리×한자리받아올림①',o:'일의자리받아올림',u:'곱셈'},
+    3:{t:'두자리×한자리받아올림②',o:'연속받아올림',u:'곱셈'},4:{t:'세자리×한자리기초',o:'받아올림없음',u:'곱셈'},
+    5:{t:'세자리×한자리심화',o:'받아올림2~3회',u:'곱셈'},6:{t:'두자리×두자리기초',o:'(10대)×(10대)',u:'곱셈'},
+    7:{t:'두자리×두자리일반',o:'받아올림1회',u:'곱셈'},8:{t:'두자리×두자리심화',o:'받아올림2회',u:'곱셈'},
+    9:{t:'세자리×두자리기초',o:'받아올림없음',u:'곱셈'},10:{t:'세자리×두자리심화',o:'연속받아올림',u:'곱셈'},
+    11:{t:'곱셈세로완성',o:'세로형식정확도',u:'곱셈'},12:{t:'곱셈문장제①',o:'1단계문장제',u:'곱셈'},
+    13:{t:'곱셈문장제②',o:'2단계문장제',u:'곱셈'},14:{t:'곱셈□구하기',o:'역산문제',u:'곱셈'},
+    15:{t:'곱셈대소비교',o:'두식비교',u:'곱셈'},16:{t:'곱셈복습①',o:'두자리×두자리',u:'복습'},
+    17:{t:'곱셈복습②',o:'세자리×두자리',u:'복습'},18:{t:'곱셈실전',o:'시험형식15문제',u:'모의'},
+    19:{t:'곱셈오답집중',o:'오답유형재도전',u:'복습'},20:{t:'곱셈마스터테스트',o:'UNIT1종합',u:'모의'},
+    21:{t:'두자리÷한자리복습',o:'3학년연결',u:'나눗셈'},22:{t:'세자리÷한자리기초',o:'나머지없음',u:'나눗셈'},
+    23:{t:'세자리÷한자리심화',o:'나머지있음',u:'나눗셈'},24:{t:'두자리÷두자리기초',o:'몫한자리',u:'나눗셈'},
+    25:{t:'두자리÷두자리심화',o:'나머지있음',u:'나눗셈'},26:{t:'세자리÷두자리기초',o:'몫한자리',u:'나눗셈'},
+    27:{t:'세자리÷두자리심화',o:'나머지있음',u:'나눗셈'},28:{t:'나눗셈검산',o:'÷↔×검산',u:'나눗셈'},
+    29:{t:'나눗셈문장제①',o:'1단계',u:'나눗셈'},30:{t:'나눗셈문장제②',o:'2단계',u:'나눗셈'},
+    31:{t:'나눗셈□구하기',o:'역산',u:'나눗셈'},32:{t:'나눗셈복습',o:'전유형',u:'복습'},
+    33:{t:'나눗셈실전',o:'시험형식',u:'모의'},34:{t:'나눗셈오답',o:'재도전',u:'복습'},
+    35:{t:'나눗셈마스터',o:'UNIT2종합',u:'모의'},36:{t:'곱셈·나눗셈혼합①',o:'혼합',u:'나눗셈'},
+    37:{t:'곱셈·나눗셈혼합②',o:'문장제',u:'나눗셈'},38:{t:'큰수읽기',o:'만~억단위',u:'나눗셈'},
+    39:{t:'큰수연산',o:'만단위덧뺄셈',u:'나눗셈'},40:{t:'단원1·2복습',o:'오답중심',u:'복습'},
+    41:{t:'분수개념정리',o:'진·가·대분수',u:'분수'},42:{t:'가↔대분수변환',o:'상호변환',u:'분수'},
+    43:{t:'분수크기비교',o:'동분모비교',u:'분수'},44:{t:'동분모덧셈①',o:'진분수+진분수',u:'분수'},
+    45:{t:'동분모덧셈②',o:'대분수+대분수',u:'분수'},46:{t:'동분모뺄셈①',o:'대분수-진분수',u:'분수'},
+    47:{t:'동분모뺄셈②',o:'자연수-대분수',u:'분수'},48:{t:'분수덧뺄셈혼합',o:'혼합',u:'분수'},
+    49:{t:'분수문장제①',o:'덧셈',u:'분수'},50:{t:'분수문장제②',o:'뺄셈',u:'분수'},
+    51:{t:'분수복습①',o:'전유형',u:'복습'},52:{t:'분수실전①',o:'시험형식',u:'모의'},
+    53:{t:'약분개념',o:'최대공약수',u:'분수'},54:{t:'통분개념',o:'최소공배수',u:'분수'},
+    55:{t:'이분모덧셈①',o:'진분수',u:'분수'},56:{t:'이분모덧셈②',o:'대분수',u:'분수'},
+    57:{t:'이분모뺄셈①',o:'진분수',u:'분수'},58:{t:'이분모뺄셈②',o:'대분수',u:'분수'},
+    59:{t:'이분모혼합문장제',o:'2단계',u:'분수'},60:{t:'분수복습②',o:'약분·통분포함',u:'복습'},
+    61:{t:'분수실전②',o:'시험형식',u:'모의'},62:{t:'분수마스터',o:'UNIT3종합',u:'모의'},
+    63:{t:'소수개념',o:'0.01단위',u:'소수'},64:{t:'소수크기비교',o:'자리비교',u:'소수'},
+    65:{t:'소수덧셈①',o:'받아올림없음',u:'소수'},66:{t:'소수덧셈②',o:'받아올림있음',u:'소수'},
+    67:{t:'소수뺄셈①',o:'받아내림없음',u:'소수'},68:{t:'소수뺄셈②',o:'받아내림있음',u:'소수'},
+    69:{t:'소수덧뺄셈혼합',o:'혼합',u:'소수'},70:{t:'소수문장제',o:'2단계',u:'소수'},
+    71:{t:'소수복습',o:'전유형',u:'복습'},72:{t:'소수실전',o:'시험형식',u:'모의'},
+    73:{t:'소수↔분수변환',o:'0.01=1/100',u:'소수'},74:{t:'소수□구하기',o:'역산',u:'소수'},
+    75:{t:'소수마스터',o:'UNIT4종합',u:'모의'},76:{t:'각도기초',o:'각도측정·계산',u:'도형'},
+    77:{t:'삼각형각도합',o:'내각=180°',u:'도형'},78:{t:'사각형각도합',o:'내각=360°',u:'도형'},
+    79:{t:'사칙혼합①',o:'덧뺄셈곱셈',u:'혼합'},80:{t:'사칙혼합②',o:'나눗셈포함',u:'혼합'},
+    81:{t:'괄호혼합',o:'괄호우선',u:'혼합'},82:{t:'혼합문장제①',o:'1~2단계',u:'혼합'},
+    83:{t:'혼합문장제②',o:'3단계이상',u:'혼합'},84:{t:'막대그래프',o:'자료해석',u:'도형'},
+    85:{t:'꺾은선그래프',o:'변화량파악',u:'도형'},86:{t:'그래프문장제',o:'자료→식→답',u:'도형'},
+    87:{t:'도형둘레',o:'다각형둘레',u:'도형'},88:{t:'사각형넓이',o:'직·정사각형',u:'도형'},
+    89:{t:'혼합계산복습',o:'오답집중',u:'복습'},90:{t:'혼합계산실전',o:'시험형식',u:'모의'},
+    91:{t:'UNIT1·2총복습',o:'곱셈·나눗셈',u:'복습'},92:{t:'UNIT3·4총복습',o:'분수·소수',u:'복습'},
+    93:{t:'UNIT5총복습',o:'혼합·도형',u:'복습'},94:{t:'모의시험①',o:'1~45일',u:'모의'},
+    95:{t:'오답분석①',o:'모의①오답',u:'복습'},96:{t:'모의시험②',o:'46~78일',u:'모의'},
+    97:{t:'오답분석②',o:'모의②오답',u:'복습'},98:{t:'종합모의시험',o:'전범위',u:'모의'},
+    99:{t:'최종오답완성',o:'약점집중',u:'복습'},100:{t:'🏆DAY100마스터',o:'최종챌린지',u:'모의'},
+  },
+  5:{
+    1:{t:'덧뺄셈곱셈혼합',o:'순서규칙',u:'혼합계산'},2:{t:'덧뺄셈나눗셈혼합',o:'나눗셈우선',u:'혼합계산'},
+    3:{t:'괄호있는혼합①',o:'괄호우선',u:'혼합계산'},4:{t:'괄호있는혼합②',o:'중첩괄호',u:'혼합계산'},
+    5:{t:'4칙혼합①',o:'3가지이상',u:'혼합계산'},6:{t:'4칙혼합②',o:'나눗셈+괄호',u:'혼합계산'},
+    7:{t:'혼합문장제①',o:'2단계',u:'혼합계산'},8:{t:'혼합문장제②',o:'3단계',u:'혼합계산'},
+    9:{t:'□구하기혼합',o:'등식역산',u:'혼합계산'},10:{t:'혼합복습',o:'전유형',u:'복습'},
+    11:{t:'혼합실전',o:'시험형식',u:'모의'},12:{t:'혼합오답',o:'재도전',u:'복습'},
+    13:{t:'혼합심화',o:'분배법칙',u:'혼합계산'},14:{t:'혼합마스터',o:'UNIT1종합',u:'모의'},
+    15:{t:'약수개념',o:'약수찾기',u:'약수·배수'},16:{t:'공약수·GCD',o:'최대공약수',u:'약수·배수'},
+    17:{t:'GCD활용',o:'나누어담기',u:'약수·배수'},18:{t:'배수개념',o:'배수찾기',u:'약수·배수'},
+    19:{t:'공배수·LCM',o:'최소공배수',u:'약수·배수'},20:{t:'LCM활용',o:'동시출발',u:'약수·배수'},
+    21:{t:'약수·배수혼합①',o:'GCD·LCM',u:'약수·배수'},22:{t:'약수·배수혼합②',o:'혼합문장제',u:'약수·배수'},
+    23:{t:'약분·통분복습',o:'4학년연결',u:'약수·배수'},24:{t:'약수·배수복습',o:'전유형',u:'복습'},
+    25:{t:'약수·배수실전',o:'시험형식',u:'모의'},26:{t:'소인수분해입문',o:'소수개념',u:'약수·배수'},
+    27:{t:'약수·배수오답',o:'재도전',u:'복습'},28:{t:'약수·배수마스터',o:'UNIT2종합',u:'모의'},
+    29:{t:'이분모덧셈복습',o:'통분재확인',u:'분수'},30:{t:'이분모뺄셈복습',o:'대분수재확인',u:'분수'},
+    31:{t:'대분수덧셈심화',o:'받아올림대분수',u:'분수'},32:{t:'대분수뺄셈①',o:'자연수받아내림',u:'분수'},
+    33:{t:'대분수뺄셈②',o:'연속받아내림',u:'분수'},34:{t:'분수덧뺄셈혼합①',o:'진·대분수혼합',u:'분수'},
+    35:{t:'분수덧뺄셈혼합②',o:'이분모+대분수',u:'분수'},36:{t:'분수문장제①',o:'덧셈2단계',u:'분수'},
+    37:{t:'분수문장제②',o:'뺄셈2단계',u:'분수'},38:{t:'분수문장제③',o:'혼합3단계',u:'분수'},
+    39:{t:'분수□구하기',o:'역산',u:'분수'},40:{t:'분수대소비교',o:'이분모비교',u:'분수'},
+    41:{t:'분수복습①',o:'전유형',u:'복습'},42:{t:'분수실전①',o:'시험형식',u:'모의'},
+    43:{t:'분수오답',o:'재도전',u:'복습'},44:{t:'분수심화①',o:'3개이상분수',u:'분수'},
+    45:{t:'분수심화②',o:'괄호있는분수식',u:'분수'},46:{t:'분수복습②',o:'심화포함',u:'복습'},
+    47:{t:'분수실전②',o:'시험형식',u:'모의'},48:{t:'분수마스터',o:'UNIT3종합',u:'모의'},
+    49:{t:'분수×자연수①',o:'진분수×자연수',u:'분수곱셈'},50:{t:'분수×자연수②',o:'대분수×자연수',u:'분수곱셈'},
+    51:{t:'자연수×분수',o:'자연수×진분수',u:'분수곱셈'},52:{t:'진분수×진분수',o:'분자×분자',u:'분수곱셈'},
+    53:{t:'대분수×대분수',o:'가분수변환후',u:'분수곱셈'},54:{t:'세분수곱셈',o:'3개연속',u:'분수곱셈'},
+    55:{t:'분수곱셈약분',o:'계산전약분',u:'분수곱셈'},56:{t:'분수곱셈문장제①',o:'1단계',u:'분수곱셈'},
+    57:{t:'분수곱셈문장제②',o:'2단계',u:'분수곱셈'},58:{t:'분수곱셈복습',o:'전유형',u:'복습'},
+    59:{t:'분수곱셈실전',o:'시험형식',u:'모의'},60:{t:'분수곱셈오답',o:'재도전',u:'복습'},
+    61:{t:'분수곱셈심화',o:'혼합포함',u:'분수곱셈'},62:{t:'분수곱셈마스터',o:'UNIT4종합',u:'모의'},
+    63:{t:'삼각형넓이',o:'삼각형공식',u:'도형'},64:{t:'평행사변형넓이',o:'평행사변형',u:'도형'},
+    65:{t:'넓이문장제',o:'도형+분수',u:'도형'},66:{t:'소수×자연수①',o:'소수첫째자리',u:'소수곱셈'},
+    67:{t:'소수×자연수②',o:'소수둘째자리',u:'소수곱셈'},68:{t:'자연수×소수',o:'자연수×소수',u:'소수곱셈'},
+    69:{t:'소수×소수①',o:'첫째자리끼리',u:'소수곱셈'},70:{t:'소수×소수②',o:'둘째자리포함',u:'소수곱셈'},
+    71:{t:'소수곱셈자릿값',o:'소수점위치',u:'소수곱셈'},72:{t:'소수곱셈문장제①',o:'1단계',u:'소수곱셈'},
+    73:{t:'소수곱셈문장제②',o:'2단계',u:'소수곱셈'},74:{t:'소수곱셈복습',o:'전유형',u:'복습'},
+    75:{t:'소수곱셈실전',o:'시험형식',u:'모의'},76:{t:'소수곱셈오답',o:'재도전',u:'복습'},
+    77:{t:'소수곱셈심화',o:'소수×분수',u:'소수곱셈'},78:{t:'소수곱셈마스터',o:'UNIT5종합',u:'모의'},
+    79:{t:'합동·대칭개념',o:'합동조건',u:'도형'},80:{t:'선대칭',o:'대칭축찾기',u:'도형'},
+    81:{t:'점대칭',o:'대칭중심',u:'도형'},82:{t:'도형종합복습',o:'합동·대칭',u:'복습'},
+    83:{t:'UNIT1·2총복습',o:'혼합·약배수',u:'복습'},84:{t:'UNIT3·4총복습',o:'분수덧뺄곱',u:'복습'},
+    85:{t:'UNIT5총복습',o:'소수곱셈',u:'복습'},86:{t:'모의시험①',o:'1~48일',u:'모의'},
+    87:{t:'오답분석①',o:'모의①오답',u:'복습'},88:{t:'모의시험②',o:'49~78일',u:'모의'},
+    89:{t:'오답분석②',o:'모의②오답',u:'복습'},90:{t:'모의시험③',o:'79~82일',u:'모의'},
+    91:{t:'분수·소수통합①',o:'변환·연산혼합',u:'복습'},92:{t:'분수·소수통합②',o:'문장제심화',u:'복습'},
+    93:{t:'혼합심화특강',o:'다단계혼합',u:'혼합계산'},94:{t:'도형넓이통합',o:'삼각+사각',u:'도형'},
+    95:{t:'종합모의시험',o:'전범위',u:'모의'},96:{t:'오답총정리',o:'최빈오답',u:'복습'},
+    97:{t:'심화문장제특훈',o:'3단계',u:'소수곱셈'},98:{t:'실전감각완성',o:'모의시험',u:'모의'},
+    99:{t:'최종오답완성',o:'약점집중',u:'복습'},100:{t:'🏆DAY100마스터',o:'최종챌린지',u:'모의'},
+  },
+  6:{
+    1:{t:'분수÷자연수①',o:'진분수÷자연수',u:'분수나눗셈'},2:{t:'분수÷자연수②',o:'대분수÷자연수',u:'분수나눗셈'},
+    3:{t:'자연수÷분수①',o:'역수개념',u:'분수나눗셈'},4:{t:'자연수÷분수②',o:'자연수÷진분수',u:'분수나눗셈'},
+    5:{t:'진분수÷진분수',o:'역수곱하기',u:'분수나눗셈'},6:{t:'대분수÷대분수',o:'가분수변환',u:'분수나눗셈'},
+    7:{t:'분수나눗셈혼합①',o:'3개이상',u:'분수나눗셈'},8:{t:'분수나눗셈혼합②',o:'곱+나눗셈',u:'분수나눗셈'},
+    9:{t:'분수나눗셈문장제①',o:'1단계',u:'분수나눗셈'},10:{t:'분수나눗셈문장제②',o:'2단계',u:'분수나눗셈'},
+    11:{t:'분수나눗셈□구하기',o:'역산',u:'분수나눗셈'},12:{t:'분수나눗셈복습',o:'전유형',u:'복습'},
+    13:{t:'분수나눗셈실전',o:'시험형식',u:'모의'},14:{t:'분수나눗셈오답',o:'재도전',u:'복습'},
+    15:{t:'분수나눗셈심화①',o:'혼합포함',u:'분수나눗셈'},16:{t:'분수나눗셈심화②',o:'비율연계',u:'분수나눗셈'},
+    17:{t:'분수나눗셈복습②',o:'심화포함',u:'복습'},18:{t:'분수나눗셈실전②',o:'시험형식',u:'모의'},
+    19:{t:'분수나눗셈오답②',o:'심화오답',u:'복습'},20:{t:'분수나눗셈마스터',o:'UNIT1종합',u:'모의'},
+    21:{t:'소수÷자연수①',o:'첫째자리÷자연수',u:'소수나눗셈'},22:{t:'소수÷자연수②',o:'둘째자리÷자연수',u:'소수나눗셈'},
+    23:{t:'자연수÷소수①',o:'÷소수첫째자리',u:'소수나눗셈'},24:{t:'자연수÷소수②',o:'÷소수둘째자리',u:'소수나눗셈'},
+    25:{t:'소수÷소수①',o:'첫째자리끼리',u:'소수나눗셈'},26:{t:'소수÷소수②',o:'둘째자리포함',u:'소수나눗셈'},
+    27:{t:'소수나눗셈반올림',o:'몫어림',u:'소수나눗셈'},28:{t:'소수나눗셈문장제①',o:'1단계',u:'소수나눗셈'},
+    29:{t:'소수나눗셈문장제②',o:'2단계',u:'소수나눗셈'},30:{t:'소수나눗셈□구하기',o:'역산',u:'소수나눗셈'},
+    31:{t:'소수나눗셈복습',o:'전유형',u:'복습'},32:{t:'소수나눗셈실전',o:'시험형식',u:'모의'},
+    33:{t:'소수나눗셈오답',o:'재도전',u:'복습'},34:{t:'소수나눗셈심화',o:'반올림+문장제',u:'소수나눗셈'},
+    35:{t:'분수↔소수통합',o:'변환혼합',u:'소수나눗셈'},36:{t:'소수·분수나눗셈복습',o:'UNIT1+2통합',u:'복습'},
+    37:{t:'소수나눗셈마스터',o:'UNIT2종합',u:'모의'},38:{t:'단원1·2복습',o:'오답중심',u:'복습'},
+    39:{t:'비개념',o:'a:b읽기쓰기',u:'비·비율'},40:{t:'비율개념',o:'비율=비교÷기준',u:'비·비율'},
+    41:{t:'백분율①',o:'비율→%',u:'비·비율'},42:{t:'백분율②',o:'%→비율',u:'비·비율'},
+    43:{t:'할푼리',o:'1할=0.1',u:'비·비율'},44:{t:'비율문장제①',o:'할인·득점율',u:'비·비율'},
+    45:{t:'비율문장제②',o:'역산',u:'비·비율'},46:{t:'비율문장제③',o:'2단계',u:'비·비율'},
+    47:{t:'비율복습',o:'전유형',u:'복습'},48:{t:'비율실전',o:'시험형식',u:'모의'},
+    49:{t:'비율오답',o:'재도전',u:'복습'},50:{t:'원그래프',o:'원→비율',u:'비·비율'},
+    51:{t:'띠그래프',o:'띠→비율',u:'비·비율'},52:{t:'그래프문장제',o:'자료해석',u:'비·비율'},
+    53:{t:'비·비율심화',o:'복합문장제',u:'비·비율'},54:{t:'비·비율마스터',o:'UNIT3종합',u:'모의'},
+    55:{t:'비례식개념',o:'a:b=c:d',u:'비례식'},56:{t:'비례식성질',o:'내항=외항곱',u:'비례식'},
+    57:{t:'비례식□①',o:'한항구하기',u:'비례식'},58:{t:'비례식□②',o:'심화역산',u:'비례식'},
+    59:{t:'비례식문장제①',o:'1단계',u:'비례식'},60:{t:'비례식문장제②',o:'2단계',u:'비례식'},
+    61:{t:'비례배분개념',o:'전체→각부분',u:'비례식'},62:{t:'비례배분문장제①',o:'2:3나누기',u:'비례식'},
+    63:{t:'비례배분문장제②',o:'3항이상',u:'비례식'},64:{t:'비례식·배분혼합',o:'혼합',u:'비례식'},
+    65:{t:'비례식·배분복습',o:'전유형',u:'복습'},66:{t:'비례식·배분실전',o:'시험형식',u:'모의'},
+    67:{t:'비례식·배분오답',o:'재도전',u:'복습'},68:{t:'비례식·배분심화',o:'복합',u:'비례식'},
+    69:{t:'비례식·배분마스터',o:'UNIT4종합',u:'모의'},70:{t:'단원3·4복습',o:'오답중심',u:'복습'},
+    71:{t:'원주율개념',o:'원주=지름×π',u:'도형'},72:{t:'원둘레',o:'원주공식',u:'도형'},
+    73:{t:'원넓이',o:'S=π×r²',u:'도형'},74:{t:'원계산문장제①',o:'둘레·넓이',u:'도형'},
+    75:{t:'원계산문장제②',o:'반원·사분원',u:'도형'},76:{t:'원기둥개념',o:'밑면·옆면',u:'도형'},
+    77:{t:'원기둥겉넓이',o:'전개도활용',u:'도형'},78:{t:'원기둥부피',o:'V=π×r²×h',u:'도형'},
+    79:{t:'원뿔·구개념',o:'구성요소',u:'도형'},80:{t:'입체문장제',o:'부피·겉넓이',u:'도형'},
+    81:{t:'도형복습',o:'원+입체',u:'복습'},82:{t:'도형실전',o:'시험형식',u:'모의'},
+    83:{t:'도형오답',o:'재도전',u:'복습'},84:{t:'경우의수기초',o:'수형도',u:'경우의수'},
+    85:{t:'경우의수계산',o:'곱의법칙',u:'경우의수'},86:{t:'경우의수문장제',o:'순열·조합입문',u:'경우의수'},
+    87:{t:'UNIT1·2총복습',o:'분수·소수나눗셈',u:'복습'},88:{t:'UNIT3·4총복습',o:'비·비례식',u:'복습'},
+    89:{t:'UNIT5총복습',o:'도형·경우의수',u:'복습'},90:{t:'모의시험①',o:'1~50일',u:'모의'},
+    91:{t:'오답분석①',o:'모의①오답',u:'복습'},92:{t:'모의시험②',o:'51~86일',u:'모의'},
+    93:{t:'오답분석②',o:'모의②오답',u:'복습'},94:{t:'분수·소수통합특훈',o:'심화',u:'분수나눗셈'},
+    95:{t:'비·비례통합특훈',o:'복합문장제',u:'비·비율'},96:{t:'도형통합특훈',o:'원+입체복합',u:'도형'},
+    97:{t:'종합모의시험',o:'전범위',u:'모의'},98:{t:'오답총정리',o:'최빈오답',u:'복습'},
+    99:{t:'최종오답완성',o:'약점집중',u:'복습'},100:{t:'🏆DAY100마스터',o:'최종챌린지',u:'모의'},
+  }
+};
+
+let S = { g:4, d:1, last:null };
+let hist = [];
+
+function setGrade(g, btn) {
+  S.g = g;
+  document.querySelectorAll('.grade-seg').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  updatePreview();
+}
+function clampDay() {
+  let v = parseInt(document.getElementById('dayInput').value) || 1;
+  if (v < 1) v = 1;
+  if (v > 100) v = 100;
+  document.getElementById('dayInput').value = v;
+  S.d = v;
+}
+function stepDay(delta) {
+  let inp = document.getElementById('dayInput');
+  let v = Math.min(100, Math.max(1, (parseInt(inp.value) || 1) + delta));
+  inp.value = v;
+  S.d = v;
+  updatePreview();
+}
+function updatePreview() {
+  let v = parseInt(document.getElementById('dayInput').value) || 1;
+  v = Math.min(100, Math.max(1, v));
+  S.d = v;
+  const info = CUR[S.g]?.[v];
+  const ch = document.getElementById('topicChip');
+  if (!info) { ch.innerHTML = '<div class="tc-day">—</div><div class="tc-name">데이터없음</div>'; return; }
+  ch.innerHTML = `<div class="tc-day">Grade ${S.g} · Day ${v}</div>
+    <div class="tc-name">${info.t}</div>
+    <div class="tc-obj">${info.o}</div>
+    <div class="tc-unit">${info.u}</div>`;
+}
+function showTab(id, btn) {
+  document.querySelectorAll('.tab-section').forEach(s => s.classList.remove('on'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+  btn.classList.add('on');
+}
+
+async function generate() {
+  clampDay();
+  const info = CUR[S.g]?.[S.d];
+  if (!info) return;
+  const btn = document.getElementById('genBtn');
+  btn.classList.add('loading'); btn.disabled = true;
+  document.getElementById('overlay').classList.add('show');
+
+  const msgs = ['AI가 커리큘럼 맵을 확인합니다…','AI가 15문제를 설계하고 있습니다…','시험지 형식으로 변환 중…'];
+  let mi = 0;
+  const mt = setInterval(() => { if (mi < msgs.length) document.getElementById('ovSub').textContent = msgs[mi++]; }, 900);
+
+  try {
+    const sys = `당신은 초등 수학 시험지 전문 설계자입니다. 15Q20M 프로그램 문항을 생성합니다.
+반드시 순수 JSON만 출력하세요. 마크다운 없이.
+
+JSON 스키마:
+{
+  "sheet_title": "시험지 제목",
+  "objective": "학습 목표 한 문장",
+  "questions": [
+    {
+      "num": 1,
+      "zone": "warmup",
+      "type": "유형명",
+      "question": "문제 내용",
+      "answer": "정답",
+      "answer_note": "풀이 메모",
+      "solution": "15번만 사용, 풀이과정",
+      "error_point": "오답 포인트"
+    }
+  ],
+  "time_estimate": "약 XX분",
+  "difficulty_note": "난이도 한줄평가",
+  "next_day_hint": "다음 Day 추천"
+}
+
+구성:
+- 1~5번: zone="warmup" 쉬운 연산
+- 6~10번: zone="core" 핵심 연산
+- 11~13번: zone="concept" 개념 확인
+- 14번: zone="apply" 문장제 (식+답)
+- 15번: zone="master" 역산·심화 (solution 필드 포함)
+
+대상: 초등 ${S.g}학년. 짧고 명확한 문장. 목표 성공률 80%.`;
+
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 3000,
+        system: sys,
+        messages: [{ role: 'user', content: `Grade ${S.g}, Day ${S.d}\n주제: ${info.t}\n목표: ${info.o}\n단원: ${info.u}\n\n15Q20M 형식 15문제를 생성해주세요.` }]
+      })
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error?.message || 'API 오류');
+    const raw = data.content?.[0]?.text || '';
+    const clean = raw.replace(/```json\s*/g,'').replace(/```\s*/g,'').trim();
+    const parsed = JSON.parse(clean);
+    S.last = { g: S.g, d: S.d, info, parsed };
+    renderOutput(parsed);
+    addHist();
+  } catch(e) {
+    document.getElementById('tSheet').innerHTML = `<div style="background:#fff2f2;border:1px solid #ffcdd2;border-radius:12px;padding:20px 24px;color:#c62828;font-size:14px;line-height:1.7;max-width:600px;">⚠️ 오류: ${e.message}<br><br>이 파일은 Claude.ai 아티팩트 환경에서 실행할 때 API가 작동합니다.<br>로컬 파일로 실행 시 CORS 정책으로 API 호출이 차단됩니다.</div>`;
+    document.getElementById('emptyState').style.display = 'none';
+    document.getElementById('outputWrap').style.display = 'flex';
+  } finally {
+    clearInterval(mt);
+    btn.classList.remove('loading'); btn.disabled = false;
+    document.getElementById('overlay').classList.remove('show');
+  }
+}
+
+const ZC = {
+  warmup:  {c:'#34c759', lbl:'WARM-UP'},
+  core:    {c:'#007aff', lbl:'CORE'},
+  concept: {c:'#ff9500', lbl:'CONCEPT'},
+  apply:   {c:'#ff3b30', lbl:'APPLY'},
+  master:  {c:'#af52de', lbl:'MASTER'},
+};
+
+function fq(t) {
+  return (t||'').replace(/□/g,'<span class="a-blank"></span>').replace(/\n/g,'<br>');
+}
+
+function renderOutput(p) {
+  renderSheet(p); renderAnswer(p); renderAnalysis(p);
+  document.getElementById('emptyState').style.display = 'none';
+  document.getElementById('outputWrap').style.display = 'flex';
+  document.querySelectorAll('.tab-section').forEach(s => s.classList.remove('on'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('on'));
+  document.getElementById('tSheet').classList.add('on');
+  document.querySelector('.tab-btn').classList.add('on');
+}
+
+function renderSheet(p) {
+  const qs = p.questions || [];
+  const info = CUR[S.g][S.d];
+  let h = `<div class="sh-head">
+    <div>
+      <div class="sh-prog">15Q20M · GRADE ${S.g} · ${(info.u||'').toUpperCase()} · DAY ${S.d}</div>
+      <div class="sh-title">${p.sheet_title||'하루 15문제 수학 트레이닝'} <span>Day ${S.d}</span></div>
+      <div class="sh-sub">${info.t} · 목표 20분 · 정답률 80%</div>
+    </div>
+    <div class="sh-pills">
+      <div class="sh-pill">15 문제</div>
+      <div class="sh-pill">⏱ 20분</div>
+      <div class="sh-pill">🎯 80%</div>
+    </div>
+  </div>
+  <div class="sh-info">
+    <div class="sh-field">이름<span class="sh-line"></span></div>
+    <div class="sh-field">학년/반<span class="sh-line"></span></div>
+    <div class="sh-field">날짜<span class="sh-line"></span></div>
+    <div class="sh-field">점수<span class="sh-line" style="width:52px"></span></div>
+  </div>
+  <div class="sh-obj"><strong>🎯 학습 목표 </strong>${p.objective||info.o}</div>`;
+
+  const zones = [
+    {z:'warmup', range:'1~5번 워밍업 연산', grid:true},
+    {z:'core',   range:'6~10번 핵심 연산',  grid:true},
+    {z:'concept',range:'11~13번 개념 확인', grid:false},
+    {z:'apply',  range:'14번 응용',          grid:false},
+  ];
+  zones.forEach(({z, range, grid}) => {
+    const zqs = qs.filter(q => q.zone === z);
+    if (!zqs.length) return;
+    const col = ZC[z];
+    h += `<div class="zone-lbl"><span class="z-badge" style="background:${col.c}">${col.lbl}</span> ${range}</div>`;
+    h += grid ? `<div class="q-grid">` : `<div class="q-grid s1">`;
+    zqs.forEach((q, i) => {
+      const isOdd = grid && i % 2 === 0;
+      const style = (!isOdd && grid) ? ' style="border-right:none"' : '';
+      const ans = z==='apply' ? `<br><span style="font-size:12px;color:#8e8e93">식: <span class="a-blank w"></span> &nbsp; 답: <span class="a-blank"></span></span>` : '';
+      h += `<div class="q-item"${style}>
+        <div class="q-num" style="background:${col.c}">${q.num}</div>
+        <div class="q-text">${fq(q.question)}${ans}</div>
+      </div>`;
+    });
+    if (grid && zqs.length % 2 !== 0) h += `<div class="q-item" style="border-right:none;visibility:hidden"></div>`;
+    h += `</div>`;
+  });
+
+  const mq = qs.find(q => q.zone==='master');
+  if (mq) {
+    h += `<div class="zone-lbl"><span class="z-badge" style="background:#af52de">MASTER</span> 15번 도전 문제</div>
+    <div class="master-wrap">
+      <div class="master-hd"><div class="master-n">15</div> ⭐ MASTER PROBLEM</div>
+      <div class="master-bd">
+        ${fq(mq.question)}
+        <div class="master-space">풀이 공간</div>
+        <div style="margin-top:10px;font-size:13px;color:#8e8e93">답: <span class="a-blank w"></span></div>
+      </div>
+    </div>`;
+  }
+  h += `<div class="sh-footer"><span>15Q20M · G${S.g} · Day ${S.d}</span><div class="score-box"><span style="font-size:11px;color:#8e8e93;margin-right:6px">점수</span>/ 15</div></div>`;
+  document.getElementById('tSheet').innerHTML = `<div class="sheet">${h}</div>`;
+}
+
+function renderAnswer(p) {
+  const qs = p.questions || [];
+  const info = CUR[S.g][S.d];
+  let h = `<div class="ans-hd">✅ 정답지 · G${S.g} · Day ${S.d} · ${info.t}</div><div class="ans-grid">`;
+  qs.forEach(q => {
+    const c = ZC[q.zone]?.c || '#636366';
+    h += `<div class="ans-cell">
+      <div class="ans-n">${q.num}번${q.zone==='master'?' ⭐':''}</div>
+      <div class="ans-v" style="color:${c}">${q.answer}</div>
+      ${q.answer_note?`<div style="font-size:10px;color:#aeaeb2;margin-top:2px">${q.answer_note}</div>`:''}
+    </div>`;
+  });
+  h += `</div>`;
+  const mq = qs.find(q=>q.zone==='master');
+  if (mq?.solution) {
+    h += `<div style="margin:0 28px 16px;border:.5px solid #e5e5ea;border-radius:10px;overflow:hidden">
+      <div style="background:#f9f9f9;padding:8px 16px;font-size:12px;font-weight:600;color:#636366;border-bottom:.5px solid #e5e5ea">⭐ 15번 풀이 과정</div>
+      <div style="padding:14px 18px;font-size:13px;line-height:1.9;color:#3a3a3c">${mq.solution.replace(/\n/g,'<br>')}</div>
+    </div>`;
+  }
+  h += `<table class="err-tbl"><tr><th>번</th><th>유형</th><th>정답</th><th>오답 포인트</th></tr>`;
+  qs.forEach(q => {
+    h += `<tr><td style="font-weight:700;color:${ZC[q.zone]?.c||'#636366'}">${q.num}</td>
+      <td>${q.type||q.zone}</td><td style="font-weight:700">${q.answer}</td>
+      <td style="color:#636366">${q.error_point||'—'}</td></tr>`;
+  });
+  h += `</table>`;
+  document.getElementById('tAnswer').innerHTML = `<div class="ans-card">${h}</div>`;
+}
+
+function renderAnalysis(p) {
+  const qs = p.questions || [];
+  let h = `<div class="analysis-grid">
+  <div class="ana-card full"><div class="ana-hd">⏱ 시간 적합성</div>
+    <div class="ana-bd">예상 시간: <strong>${p.time_estimate||'약 18~20분'}</strong><br><br>${p.difficulty_note||''}</div>
+  </div>
+  <div class="ana-card"><div class="ana-hd">📐 구성</div>
+    <div class="ana-bd"><ul>
+      <li><span style="color:#34c759">●</span> 워밍업 Q1~5</li>
+      <li><span style="color:#007aff">●</span> 핵심 Q6~10</li>
+      <li><span style="color:#ff9500">●</span> 개념 Q11~13</li>
+      <li><span style="color:#ff3b30">●</span> 응용 Q14</li>
+      <li><span style="color:#af52de">●</span> Master Q15</li>
+    </ul></div>
+  </div>
+  <div class="ana-card"><div class="ana-hd">⚠️ 오답 포인트</div>
+    <div class="ana-bd"><ul>`;
+  qs.filter(q=>q.error_point).slice(0,6).forEach(q => {
+    h += `<li><strong>${q.num}번</strong>: ${q.error_point}</li>`;
+  });
+  h += `</ul></div></div>
+  <div class="ana-card full"><div class="ana-hd">📅 다음 Day 추천</div>
+    <div class="ana-bd"><strong>Day ${S.d+1}:</strong> ${p.next_day_hint||(CUR[S.g]?.[S.d+1]?.t||'—')}</div>
+  </div></div>`;
+  document.getElementById('tAnalysis').innerHTML = h;
+}
+
+function addHist() {
+  hist.unshift({ g:S.g, d:S.d, t:CUR[S.g][S.d].t, snap:S.last });
+  if (hist.length > 8) hist.pop();
+  renderHist();
+}
+function renderHist() {
+  const el = document.getElementById('histList');
+  if (!hist.length) { el.innerHTML = '<div class="hist-empty">아직 없습니다.</div>'; return; }
+  el.innerHTML = hist.map((h,i) => `
+    <div class="hist-item" onclick="loadHist(${i})">
+      <div class="hist-g">G${h.g}·D${h.d}</div>
+      <div class="hist-topic">${h.t}</div>
+    </div>`).join('');
+}
+function loadHist(i) {
+  const h = hist[i];
+  if (!h?.snap) return;
+  S.g = h.g; S.d = h.d;
+  document.getElementById('dayInput').value = h.d;
+  document.querySelectorAll('.grade-seg').forEach((b,idx) => b.classList.toggle('on',[3,4,5,6][idx]===h.g));
+  updatePreview();
+  renderOutput(h.snap.parsed);
+}
+function copyTxt() {
+  if (!S.last) return;
+  const qs = S.last.parsed.questions || [];
+  let t = `[15Q20M] G${S.last.g} · Day ${S.last.d} · ${S.last.info.t}\n목표: ${S.last.parsed.objective}\n\n`;
+  qs.forEach(q => t += `${q.num}. ${q.question}\n`);
+  t += `\n[정답]\n`;
+  qs.forEach(q => t += `${q.num}. ${q.answer}\n`);
+  navigator.clipboard.writeText(t).then(() => alert('복사 완료!'));
+}
+
+updatePreview();
+</script>
+</body>
+</html>
