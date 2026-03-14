@@ -47,7 +47,7 @@ export const ROLE_HOME: Record<Role, string> = {
 export const ALLOWED_PATHS: Record<Role, string[]> = {
   admin: ['/reports', '/exam', '/students', '/textbook', '/schedule', '/settings'],
   teacher: ['/reports', '/schedule'],
-  student: ['/student'],
+  student: ['/student', '/exam'],
 };
 
 export function canAccess(role: Role, pathname: string): boolean {

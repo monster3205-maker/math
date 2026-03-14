@@ -26,7 +26,7 @@ function ExamContent() {
 
 export default function ExamPage() {
   return (
-    <AuthGuard allowedRoles={['admin']}>
+    <AuthGuard allowedRoles={['admin', 'student']}>
       <ExamContent />
     </AuthGuard>
   );

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import AuthGuard from '@/components/AuthGuard';
 import { getUser } from '@/lib/auth';
 
@@ -10,6 +11,7 @@ const DUMMY_ASSIGNMENTS = [
 ];
 
 function StudentContent() {
+  const router = useRouter();
   const [userId, setUserId] = useState('');
 
   useEffect(() => {
@@ -44,7 +46,10 @@ function StudentContent() {
                       <p className="font-semibold text-gray-900 text-sm">{a.subject}</p>
                       <p className="text-xs text-gray-400 mt-0.5">제한시간 {a.timeLimit} · 배정일 {a.assignedAt}</p>
                     </div>
-                    <button className="shrink-0 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg transition-colors">
+                    <button
+                      onClick={() => router.push('/exam')}
+                      className="shrink-0 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg transition-colors"
+                    >
                       시험 시작
                     </button>
                   </div>
