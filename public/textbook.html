@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📚 교재비 안내문 생성기 — 이투스 수학학원</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root { --navy:#1e3a6e;--navy2:#2d5099;--light:#f0f4fb;--border:#d0daea;--accent:#e8a020;--green:#27ae60;--red:#c0392b;--msg-bg:#f0f6ff; }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Noto Sans KR',sans-serif;font-size:13px;background:var(--light);color:#222;height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+  #header{background:var(--navy);color:white;padding:11px 18px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;gap:10px;}
+  .title{font-size:16px;font-weight:900;}.sub{font-size:11px;color:#90a8d0;margin-top:2px;}
+  .hbtns{display:flex;gap:7px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end;}
+  .hbtn{border:none;border-radius:8px;padding:7px 13px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-size:12px;transition:background .2s;white-space:nowrap;}
+  .hbtn-manage{background:var(--navy2);color:white;}.hbtn-manage.active{background:#e8eeff;color:var(--navy);}
+  .hbtn-copy{background:var(--accent);color:white;}.hbtn-copy.done{background:var(--green);}
+  #bookPanel{background:#dfe8f7;border-bottom:2px solid var(--border);padding:13px 18px;display:none;flex-shrink:0;}
+  .panel-title{font-weight:700;color:var(--navy);margin-bottom:9px;font-size:13px;}
+  .panel-layout{display:flex;gap:18px;align-items:flex-start;}
+  /* 기존 교재 목록 테이블 */
+  #existingBooksWrap{flex:1;min-width:0;}
+  #existingBooksWrap .section-label{font-size:12px;font-weight:700;color:#4a6bc0;margin-bottom:6px;}
+  #existingBooksScroll{max-height:180px;overflow-y:auto;border-radius:9px;}
+  #bookListTable{width:100%;border-collapse:collapse;background:white;border-radius:9px;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.07);}
+  #bookListTable th{background:var(--navy);color:white;padding:7px 10px;font-size:11px;font-weight:700;text-align:left;}
+  #bookListTable .drag-handle{cursor:grab;color:#aab4d0;font-size:14px;padding:0 4px;user-select:none;}
+  #bookListTable .drag-handle:active{cursor:grabbing;}
+  #bookListTable tr.dragging{opacity:0.4;}
+  #bookListTable tr.drag-over{border-top:2px solid var(--navy);}
+  #bookListTable td{padding:5px 8px;border-bottom:1px solid #edf1fb;font-size:12.5px;vertical-align:middle;}
+  #bookListTable tbody tr:last-child td{border-bottom:none;}
+  #bookListTable .edit-name{width:100%;border:1px solid #d0daea;border-radius:5px;padding:4px 6px;font-family:inherit;font-size:12px;color:var(--navy);outline:none;}
+  #bookListTable .edit-price{width:80px;border:1px solid #d0daea;border-radius:5px;padding:4px 6px;font-family:inherit;font-size:12px;text-align:right;outline:none;}
+  #bookListTable .edit-name:focus,#bookListTable .edit-price:focus{border-color:var(--navy);}
+  /* 일괄 추가 영역 */
+  #batchAddWrap{flex:0 0 340px;}
+  #batchAddWrap .section-label{font-size:12px;font-weight:700;color:#4a6bc0;margin-bottom:6px;}
+  #batchScroll{max-height:180px;overflow-y:auto;border-radius:9px;margin-bottom:8px;}
+  #batchTable{width:100%;border-collapse:collapse;background:white;border-radius:9px;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.07);}
+  #batchTable th{background:#3a5fa0;color:white;padding:7px 10px;font-size:11px;font-weight:700;text-align:left;}
+  #batchTable td{padding:5px 6px;border-bottom:1px solid #edf1fb;}
+  #batchTable tbody tr:last-child td{border-bottom:none;}
+  .batch-name{width:100%;border:1px solid #d0daea;border-radius:5px;padding:5px 7px;font-family:inherit;font-size:12px;color:var(--navy);outline:none;}
+  .batch-price{width:100%;border:1px solid #d0daea;border-radius:5px;padding:5px 7px;font-family:inherit;font-size:12px;text-align:right;outline:none;}
+  .batch-name:focus,.batch-price:focus{border-color:var(--navy);}
+  #batchBtns{display:flex;gap:7px;}
+  .batch-btn{border:none;border-radius:7px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;}
+  .btn-add-row{background:#e8eeff;color:var(--navy);}
+  .btn-save-batch{background:var(--navy);color:white;}
+  .btn-save-batch.done{background:var(--green);}
+  .no-books-msg{text-align:center;color:#b0bcd0;padding:14px;font-size:12px;}
+  #main{display:flex;flex:1;overflow:hidden;}
+  #leftPane{flex:0 0 55%;overflow-y:auto;border-right:2px solid var(--border);}
+  #rightPane{flex:0 0 45%;overflow-y:auto;background:#f7f9fd;display:flex;flex-direction:column;}
+  table{width:100%;border-collapse:collapse;}
+  thead{position:sticky;top:0;z-index:10;}
+  thead tr{background:var(--navy);color:white;}
+  th{padding:9px 7px;font-weight:700;font-size:12px;text-align:left;border-right:1px solid rgba(255,255,255,0.15);white-space:nowrap;}
+  tbody tr:nth-child(even){background:#f7f9fd;}tbody tr:nth-child(odd){background:#fff;}
+  tbody tr{border-bottom:1px solid #e5eaf3;vertical-align:middle;}
+  td{padding:7px 7px;border-right:1px solid #e5eaf3;}
+  .cell-input{width:100%;border:1.5px solid var(--border);border-radius:7px;padding:6px 8px;font-family:inherit;font-size:13px;color:var(--navy);outline:none;background:white;}
+  .cell-input:focus{border-color:var(--navy);}
+  .cell-select{width:100%;border:1.5px solid var(--border);border-radius:7px;padding:6px 6px;font-family:inherit;font-size:12px;color:var(--navy);outline:none;background:white;cursor:pointer;}
+  .cell-select:focus{border-color:var(--navy);}
+  .price-input{width:100%;border:1.5px solid var(--border);border-radius:7px;padding:6px 6px;font-family:inherit;font-size:12px;text-align:right;color:#333;outline:none;background:white;}
+  .total-cell{text-align:right;font-weight:700;color:var(--navy);white-space:nowrap;}
+  .action-cell{text-align:center;white-space:nowrap;}
+  .small-btn{border:none;border-radius:6px;padding:3px 8px;cursor:pointer;font-size:11px;font-weight:700;font-family:inherit;margin:1px;}
+  .btn-add-book{background:#e8eeff;color:var(--navy);}.btn-del-student{background:#ffe0e0;color:var(--red);}
+  .btn-del-book{background:#ffe0e0;color:var(--red);padding:3px 6px;}
+  #addStudentRow{padding:12px 16px;}
+  #addStudentBtn{background:var(--navy);color:white;border:none;border-radius:9px;padding:9px 20px;font-weight:700;cursor:pointer;font-size:13px;font-family:inherit;}
+  #rightTabs{display:flex;background:#e8eeff;border-bottom:2px solid var(--border);flex-shrink:0;position:sticky;top:0;z-index:10;}
+  .rtab{flex:1;padding:10px 0;text-align:center;font-weight:700;font-size:12px;color:#6677aa;cursor:pointer;border-bottom:3px solid transparent;transition:all .2s;}
+  .rtab.active{color:var(--navy);border-bottom:3px solid var(--navy);background:white;}
+  #msgPanel,#checkPanel{flex:1;overflow-y:auto;}
+  #msgList{padding:12px 14px;display:flex;flex-direction:column;gap:10px;}
+  .msg-card{background:white;border-radius:12px;padding:13px 15px;box-shadow:0 2px 8px rgba(0,0,0,0.06);border:1.5px solid #e0e8f5;}
+  .msg-card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+  .msg-student-name{font-weight:700;color:var(--navy);font-size:13px;}
+  .copy-btn{background:var(--navy);color:white;border:none;border-radius:7px;padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;transition:background .2s;}
+  .copy-btn.done{background:var(--green);}
+  .msg-text{background:var(--msg-bg);border-radius:8px;padding:10px 12px;font-size:12.5px;line-height:1.85;color:#2c3e6a;white-space:pre-wrap;word-break:break-all;}
+  .msg-empty{color:#b0bcd0;font-size:12px;padding:4px 0;}
+  #checkPanel{display:none;padding:14px;}
+  #checkHeader{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+  #checkHeader h3{font-weight:700;color:var(--navy);font-size:13px;}
+  #checkHeaderBtns{display:flex;gap:7px;}
+  .check-action-btn{border:none;border-radius:8px;padding:6px 13px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;}
+  .btn-copy-table{background:var(--navy);color:white;}.btn-copy-table.done{background:var(--green);}
+  .btn-reset-check{background:#f0f0f0;color:#555;}
+  #checkTable{width:100%;border-collapse:collapse;background:white;border-radius:10px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,0.07);}
+  #checkTable thead tr{background:var(--navy);color:white;}
+  #checkTable th{padding:9px 10px;font-size:12px;font-weight:700;text-align:left;}
+  #checkTable td{padding:8px 10px;border-bottom:1px solid #e5eaf3;font-size:13px;}
+  #checkTable tbody tr:last-child td{border-bottom:none;}
+  #checkTable tbody tr.paid{background:#edfbf3;}
+  #checkTable tbody tr.paid td{color:#888;text-decoration:line-through;}
+  #checkTable tbody tr.paid td.check-col{text-decoration:none;}
+  .check-name{font-weight:700;color:var(--navy);}
+  .check-price{text-align:right;font-weight:700;color:#1e3a6e;}
+  .check-col{text-align:center;}
+  .check-col input[type=checkbox]{width:17px;height:17px;cursor:pointer;accent-color:var(--green);}
+  .paid-badge{display:inline-block;background:var(--green);color:white;border-radius:5px;padding:2px 7px;font-size:11px;font-weight:700;}
+  #checkSummary{margin-top:12px;background:white;border-radius:10px;padding:12px 14px;box-shadow:0 2px 10px rgba(0,0,0,0.07);display:flex;gap:16px;flex-wrap:wrap;}
+  .summary-item{font-size:13px;color:#555;}.summary-item span{font-weight:700;color:var(--navy);}
+  .summary-item.green span{color:var(--green);}.summary-item.red span{color:var(--red);}
+</style>
+</head>
+<body>
+<div id="header">
+  <div><div class="title">📚 교재비 안내문 생성기</div><div class="sub">이투스 수학학원 · 우리은행 1002 582 468744 김강석</div></div>
+  <div class="hbtns">
+    <button class="hbtn hbtn-manage" id="toggleBookBtn" onclick="toggleBookPanel()">⚙️ 교재 관리</button>
+    <button class="hbtn hbtn-copy" id="copyAllBtn" onclick="copyAll()">📋 전체 복사</button>
+  </div>
+</div>
+<div id="bookPanel">
+  <div class="panel-title">📖 교재 목록 관리 <span style="font-size:11px;color:#7a8eb0;font-weight:400;margin-left:6px">※ 수정사항은 자동 저장됩니다</span></div>
+  <div class="panel-layout">
+    <!-- 기존 교재 목록 -->
+    <div id="existingBooksWrap">
+      <div class="section-label">📋 등록된 교재</div>
+      <div id="existingBooksScroll">
+        <table id="bookListTable">
+          <thead><tr><th style="width:24px"></th><th>교재명</th><th style="width:90px">가격</th><th style="width:36px"></th></tr></thead>
+          <tbody id="bookListBody"></tbody>
+        </table>
+      </div>
+    </div>
+    <!-- 일괄 추가 -->
+    <div id="batchAddWrap">
+      <div class="section-label">➕ 교재 일괄 추가</div>
+      <div id="batchScroll">
+        <table id="batchTable">
+          <thead><tr><th>교재명</th><th style="width:90px">교재비</th><th style="width:30px"></th></tr></thead>
+          <tbody id="batchBody"></tbody>
+        </table>
+      </div>
+      <div id="batchBtns">
+        <button class="batch-btn btn-add-row" onclick="addBatchRow()">+ 행 추가</button>
+        <button class="batch-btn btn-save-batch" id="saveBatchBtn" onclick="saveBatch()">✅ 전체 저장</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="main">
+  <div id="leftPane">
+    <table><thead id="tableHead"></thead><tbody id="tableBody"></tbody></table>
+    <div id="addStudentRow"><button id="addStudentBtn" onclick="addStudent()">+ 학생 추가</button></div>
+  </div>
+  <div id="rightPane">
+    <div id="rightTabs">
+      <div class="rtab active" id="tab-msg" onclick="switchTab('msg')">💬 문자 미리보기</div>
+      <div class="rtab" id="tab-check" onclick="switchTab('check')">✅ 교재비 수납 체크</div>
+    </div>
+    <div id="msgPanel"><div id="msgList"></div></div>
+    <div id="checkPanel">
+      <div id="checkHeader">
+        <h3>💰 교재비 수납 현황</h3>
+        <div id="checkHeaderBtns">
+          <button class="check-action-btn btn-copy-table" id="copyTableBtn" onclick="copyCheckTable()">📋 표 복사</button>
+          <button class="check-action-btn btn-reset-check" onclick="resetChecks()">↺ 초기화</button>
+        </div>
+      </div>
+      <table id="checkTable">
+        <thead><tr>
+          <th style="width:36px" class="check-col">✔</th>
+          <th>이름</th>
+          <th style="text-align:right">교재비</th>
+          <th style="text-align:center;width:60px">상태</th>
+        </tr></thead>
+        <tbody id="checkBody"></tbody>
+      </table>
+      <div id="checkSummary"></div>
+    </div>
+  </div>
+</div>
+<script>
+const ACADEMY='이투스 수학학원',BANK='우리은행 1002 582 468744 김강석',LS_BOOKS='etoos_bookmaster_v2',LS_CTR='etoos_bookctr_v2';
+const DEFAULT_BOOKS=[{id:1,name:'디딤돌 기본+응용 5-1',price:15000},{id:2,name:'디딤돌 기본+응용 5-2',price:15000},{id:3,name:'수력충전 1-1',price:13000},{id:4,name:'베이직쎈 1-1',price:14000},{id:5,name:'베이직쎈 2-1',price:13000},{id:6,name:'수중 2-1',price:9000},{id:7,name:'수중 3-135',price:10000},{id:8,name:'수중 3-138',price:10000}];
+function loadBooks(){try{const r=localStorage.getItem(LS_BOOKS);if(r)return JSON.parse(r);}catch(e){}return JSON.parse(JSON.stringify(DEFAULT_BOOKS));}
+function saveBooks(){localStorage.setItem(LS_BOOKS,JSON.stringify(bookMaster));localStorage.setItem(LS_CTR,String(bookIdCounter));}
+let bookMaster=loadBooks(),bookIdCounter=parseInt(localStorage.getItem(LS_CTR)||'9');
+let students=[],studentIdCounter=1,paidSet=new Set(),currentTab='msg';
+
+function switchTab(t){
+  currentTab=t;
+  document.getElementById('tab-msg').classList.toggle('active',t==='msg');
+  document.getElementById('tab-check').classList.toggle('active',t==='check');
+  document.getElementById('msgPanel').style.display=t==='msg'?'block':'none';
+  document.getElementById('checkPanel').style.display=t==='check'?'block':'none';
+  if(t==='check')renderCheckTable();
+}
+function toggleBookPanel(){
+  const p=document.getElementById('bookPanel'),b=document.getElementById('toggleBookBtn'),open=p.style.display==='block';
+  p.style.display=open?'none':'block';b.classList.toggle('active',!open);
+  if(!open){renderBookList();renderBatchRows();}
+}
+// ── 기존 교재 목록 테이블 렌더 ──
+function renderBookList(){
+  const tbody=document.getElementById('bookListBody');
+  if(!bookMaster.length){tbody.innerHTML=`<tr><td colspan="4" class="no-books-msg">등록된 교재가 없습니다.</td></tr>`;return;}
+  tbody.innerHTML=bookMaster.map(b=>`
+    <tr draggable="true" data-id="${b.id}">
+      <td><span class="drag-handle" title="드래그로 순서 변경">⠿</span></td>
+      <td><input class="edit-name" value="${esc(b.name)}" onchange="updateBookName(${b.id},this.value)"></td>
+      <td><input class="edit-price" value="${b.price}" onchange="updateBookPrice(${b.id},this.value)" oninput="this.value=this.value.replace(/\D/g,'')"></td>
+      <td style="text-align:center"><button class="tag-btn" onclick="deleteBook(${b.id})" title="삭제" style="color:var(--red);font-size:14px">✕</button></td>
+    </tr>`).join('');
+  initDragDrop();
+}
+
+let dragSrcId=null;
+function initDragDrop(){
+  const tbody=document.getElementById('bookListBody');
+  tbody.querySelectorAll('tr[draggable]').forEach(row=>{
+    row.addEventListener('dragstart',e=>{
+      dragSrcId=parseInt(row.dataset.id);
+      row.classList.add('dragging');
+      e.dataTransfer.effectAllowed='move';
+    });
+    row.addEventListener('dragend',()=>row.classList.remove('dragging'));
+    row.addEventListener('dragover',e=>{
+      e.preventDefault();
+      tbody.querySelectorAll('tr').forEach(r=>r.classList.remove('drag-over'));
+      row.classList.add('drag-over');
+    });
+    row.addEventListener('dragleave',()=>row.classList.remove('drag-over'));
+    row.addEventListener('drop',e=>{
+      e.preventDefault();
+      row.classList.remove('drag-over');
+      const targetId=parseInt(row.dataset.id);
+      if(dragSrcId===null||dragSrcId===targetId)return;
+      const srcIdx=bookMaster.findIndex(b=>b.id===dragSrcId);
+      const tgtIdx=bookMaster.findIndex(b=>b.id===targetId);
+      if(srcIdx<0||tgtIdx<0)return;
+      const [moved]=bookMaster.splice(srcIdx,1);
+      bookMaster.splice(tgtIdx,0,moved);
+      saveBooks();
+      renderBookList();
+      renderTable();
+    });
+  });
+}
+function updateBookName(id,val){
+  const b=bookMaster.find(b=>b.id===id);if(b&&val.trim()){b.name=val.trim();saveBooks();renderTable();}
+}
+function updateBookPrice(id,val){
+  const b=bookMaster.find(b=>b.id===id),p=parseInt(val);if(b&&p){b.price=p;saveBooks();}
+}
+function deleteBook(id){
+  bookMaster=bookMaster.filter(b=>b.id!==id);
+  students.forEach(s=>s.books.forEach(b=>{if(b.bookId==id){b.bookId='';b.price=''}}));
+  saveBooks();renderBookList();renderTable();renderMessages();
+}
+// ── 일괄 추가 ──
+let batchRows=[{name:'',price:''}];
+function renderBatchRows(){
+  document.getElementById('batchBody').innerHTML=batchRows.map((r,i)=>`
+    <tr>
+      <td><input class="batch-name" value="${esc(r.name)}" placeholder="교재명" oninput="batchRows[${i}].name=this.value"></td>
+      <td><input class="batch-price" value="${r.price}" placeholder="가격" oninput="batchRows[${i}].price=this.value.replace(/\D/g,'')" onchange="this.value=this.value.replace(/\D/g,'')"></td>
+      <td style="text-align:center">${batchRows.length>1?`<button class="tag-btn" onclick="removeBatchRow(${i})" style="color:var(--red);font-size:14px">✕</button>`:''}</td>
+    </tr>`).join('');
+}
+function addBatchRow(){batchRows.push({name:'',price:''});renderBatchRows();
+  setTimeout(()=>{
+    const scroll=document.getElementById('batchScroll');
+    if(scroll)scroll.scrollTop=scroll.scrollHeight;
+    const inputs=document.querySelectorAll('.batch-name');if(inputs.length)inputs[inputs.length-1].focus();
+  },50);
+}
+function removeBatchRow(i){batchRows.splice(i,1);if(!batchRows.length)batchRows=[{name:'',price:''}];renderBatchRows();}
+function saveBatch(){
+  const valid=batchRows.filter(r=>r.name.trim()&&parseInt(r.price));
+  if(!valid.length)return;
+  valid.forEach(r=>bookMaster.push({id:bookIdCounter++,name:r.name.trim(),price:parseInt(r.price)}));
+  saveBooks();
+  batchRows=[{name:'',price:''}];
+  renderBookList();renderBatchRows();renderTable();
+  const btn=document.getElementById('saveBatchBtn');
+  btn.textContent=`✅ ${valid.length}개 저장됨`;btn.classList.add('done');
+  setTimeout(()=>{btn.textContent='✅ 전체 저장';btn.classList.remove('done');},2000);
+}
+// 구버전 호환용 (사용 안 함)
+function renderBookTags(){}
+function addBook(){}
+function addStudent(){
+  students.push({id:studentIdCounter++,name:'',books:[{bookId:'',price:''},{bookId:'',price:''}]});
+  renderTable();renderMessages();
+}
+function removeStudent(sid){
+  students=students.filter(s=>s.id!==sid);paidSet.delete(sid);
+  renderTable();renderMessages();if(currentTab==='check')renderCheckTable();
+}
+function addBookSlot(sid){const s=students.find(s=>s.id===sid);if(s)s.books.push({bookId:'',price:''});renderTable();renderMessages();}
+function removeBookSlot(sid,bi){
+  const s=students.find(s=>s.id===sid);if(!s)return;
+  s.books.splice(bi,1);if(!s.books.length)s.books.push({bookId:'',price:''});
+  renderTable();renderMessages();
+}
+function onNameChange(sid,val){const s=students.find(s=>s.id===sid);if(s)s.name=val;renderMessages();if(currentTab==='check')renderCheckTable();}
+function onBookChange(sid,bi,val){
+  const s=students.find(s=>s.id===sid);if(!s)return;
+  const found=bookMaster.find(b=>b.id===parseInt(val));
+  s.books[bi].bookId=val;s.books[bi].price=found?String(found.price):'';
+  renderTable();renderMessages();if(currentTab==='check')renderCheckTable();
+}
+function onPriceChange(sid,bi,val){
+  const s=students.find(s=>s.id===sid);if(!s)return;
+  s.books[bi].price=val.replace(/\D/g,'');
+  renderTable();renderMessages();if(currentTab==='check')renderCheckTable();
+}
+// ── 정렬 상태: 'none' | 'asc' | 'desc' ──
+let sortOrder='none';
+function cycleSortOrder(){
+  sortOrder=sortOrder==='none'?'asc':sortOrder==='asc'?'desc':'none';
+  renderTable();renderMessages();if(currentTab==='check')renderCheckTable();
+}
+function getSortedStudents(){
+  if(sortOrder==='none')return students;
+  return [...students].sort((a,b)=>{
+    const na=a.name.trim(),nb=b.name.trim();
+    if(!na&&!nb)return 0;if(!na)return 1;if(!nb)return -1;
+    return sortOrder==='asc'?na.localeCompare(nb,'ko'):nb.localeCompare(na,'ko');
+  });
+}
+function renderTable(){
+  const max=Math.max(2,...students.map(s=>s.books.length));
+  const icon=sortOrder==='asc'?' ▲':sortOrder==='desc'?' ▼':' ⇅';
+  const sortStyle='cursor:pointer;user-select:none;white-space:nowrap;';
+  let h=`<tr><th style="width:80px;${sortStyle}" onclick="cycleSortOrder()" title="이름 정렬">이름${icon}</th>`;
+  for(let i=0;i<max;i++)h+=`<th>교재명 ${i+1}</th><th style="width:75px">가격</th>`;
+  h+='<th style="width:75px">합계</th><th style="width:70px">관리</th></tr>';
+  document.getElementById('tableHead').innerHTML=h;
+  let b='';
+  getSortedStudents().forEach(s=>{
+    const total=s.books.reduce((a,b)=>a+(parseInt(b.price)||0),0);
+    b+=`<tr><td><input class="cell-input" value="${esc(s.name)}" placeholder="이름" oninput="onNameChange(${s.id},this.value)" style="font-weight:700"></td>`;
+    const slots=[...s.books];while(slots.length<max)slots.push(null);
+    slots.forEach((bk,bi)=>{
+      if(!bk){b+=`<td></td><td></td>`;return;}
+      const opts=bookMaster.map(m=>`<option value="${m.id}" ${bk.bookId==m.id?'selected':''}>${esc(m.name)}</option>`).join('');
+      b+=`<td><div style="display:flex;gap:4px;align-items:center"><select class="cell-select" onchange="onBookChange(${s.id},${bi},this.value)"><option value="">-- 선택 --</option>${opts}</select>${s.books.length>1?`<button class="small-btn btn-del-book" onclick="removeBookSlot(${s.id},${bi})">✕</button>`:''}</div></td>`;
+      b+=`<td><input class="price-input" value="${esc(bk.price)}" oninput="onPriceChange(${s.id},${bi},this.value)"></td>`;
+    });
+    b+=`<td class="total-cell">${total>0?total.toLocaleString():''}</td>`;
+    b+=`<td class="action-cell"><button class="small-btn btn-add-book" onclick="addBookSlot(${s.id})">+책</button><button class="small-btn btn-del-student" onclick="removeStudent(${s.id})">삭제</button></td></tr>`;
+  });
+  document.getElementById('tableBody').innerHTML=b;
+}
+function getMessage(s){
+  const v=s.books.filter(b=>b.bookId&&b.price);if(!s.name.trim()||!v.length)return'';
+  const total=v.reduce((a,b)=>a+(parseInt(b.price)||0),0);
+  const bookLines=v.map(b=>{
+    const f=bookMaster.find(m=>m.id===parseInt(b.bookId));
+    return f?`  - ${f.name}  ${parseInt(b.price).toLocaleString()}원`:'';
+  }).filter(Boolean).join('\n');
+  const totalLine=v.length>1?`\n  합계  ${total.toLocaleString()}원`:'';
+  return `[책값 안내]\n\n안녕하세요. ${ACADEMY}입니다.\n${s.name.trim()} 학생 책값 안내드립니다.\n\n${bookLines}${totalLine}\n\n다음 시간에 보내주시거나\n계좌이체도 가능하십니다.\n\n${BANK}\n\n감사합니다.^^`;
+}
+function renderMessages(){
+  document.getElementById('msgList').innerHTML=students.map(s=>{
+    const msg=getMessage(s);
+    return`<div class="msg-card"><div class="msg-card-header"><span class="msg-student-name">${s.name?'📌 '+esc(s.name)+' 학생':'<span style="color:#aab4c8">이름 미입력</span>'}</span>${msg?`<button class="copy-btn" id="copybtn-${s.id}" onclick="copyMsg(${s.id})">📋 복사</button>`:''}</div>${msg?`<div class="msg-text">${esc(msg)}</div>`:`<div class="msg-empty">이름과 교재를 선택하면 메시지가 생성됩니다.</div>`}</div>`;
+  }).join('');
+}
+function togglePaid(sid){if(paidSet.has(sid))paidSet.delete(sid);else paidSet.add(sid);renderCheckTable();}
+function resetChecks(){paidSet.clear();renderCheckTable();}
+function renderCheckTable(){
+  const valid=students.filter(s=>s.name.trim()&&s.books.some(b=>b.bookId&&b.price));
+  let tAll=0,tPaid=0,paidCount=0;
+  let rows='';
+  valid.forEach(s=>{
+    const total=s.books.reduce((a,b)=>a+(parseInt(b.price)||0),0),paid=paidSet.has(s.id);
+    tAll+=total;if(paid){tPaid+=total;paidCount++;}
+    rows+=`<tr class="${paid?'paid':''}"><td class="check-col"><input type="checkbox" ${paid?'checked':''} onchange="togglePaid(${s.id})"></td><td class="check-name">${esc(s.name)}</td><td class="check-price">${total.toLocaleString()}원</td><td class="check-col">${paid?'<span class="paid-badge">수납</span>':''}</td></tr>`;
+  });
+  if(!valid.length)rows=`<tr><td colspan="4" style="text-align:center;color:#b0bcd0;padding:20px">학생 이름과 교재를 입력하면 표시됩니다.</td></tr>`;
+  document.getElementById('checkBody').innerHTML=rows;
+  document.getElementById('checkSummary').innerHTML=`<div class="summary-item">전체 <span>${valid.length}명 / ${tAll.toLocaleString()}원</span></div><div class="summary-item green">수납 완료 <span>${paidCount}명 / ${tPaid.toLocaleString()}원</span></div><div class="summary-item red">미수납 <span>${valid.length-paidCount}명 / ${(tAll-tPaid).toLocaleString()}원</span></div>`;
+}
+function copyCheckTable(){
+  const valid=students.filter(s=>s.name.trim()&&s.books.some(b=>b.bookId&&b.price));if(!valid.length)return;
+  let text='이름\t교재비\t상태\n';
+  valid.forEach(s=>{const total=s.books.reduce((a,b)=>a+(parseInt(b.price)||0),0);text+=`${s.name}\t${total.toLocaleString()}원\t${paidSet.has(s.id)?'✅ 수납':'⬜ 미수납'}\n`;});
+  text+=`\n합계\t${valid.reduce((a,s)=>a+s.books.reduce((x,b)=>x+(parseInt(b.price)||0),0),0).toLocaleString()}원\t`;
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn=document.getElementById('copyTableBtn');btn.textContent='✅ 복사됨';btn.classList.add('done');
+    setTimeout(()=>{btn.textContent='📋 표 복사';btn.classList.remove('done');},2000);
+  });
+}
+function copyMsg(sid){
+  const s=students.find(s=>s.id===sid);if(!s)return;const msg=getMessage(s);if(!msg)return;
+  navigator.clipboard.writeText(msg).then(()=>{
+    const btn=document.getElementById('copybtn-'+sid);if(btn){btn.textContent='✅ 복사됨';btn.classList.add('done');}
+    setTimeout(()=>{if(btn){btn.textContent='📋 복사';btn.classList.remove('done');}},2000);
+  });
+}
+function copyAll(){
+  const msgs=students.map(s=>getMessage(s)).filter(Boolean);if(!msgs.length)return;
+  navigator.clipboard.writeText(msgs.join('\n\n')).then(()=>{
+    const btn=document.getElementById('copyAllBtn');btn.textContent='✅ 전체 복사됨';btn.classList.add('done');
+    setTimeout(()=>{btn.textContent='📋 전체 복사';btn.classList.remove('done');},2500);
+  });
+}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+renderBatchRows();
+for(let i=0;i<5;i++)addStudent();
+switchTab('msg');
+</script>
+</body>
+</html>

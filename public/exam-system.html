@@ -1,0 +1,1868 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>15Q20M · 학원 시험 관리 시스템</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.development.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.development.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+:root {
+  --blue:#007AFF; --blue-light:#E8F1FF; --green:#34C759; --orange:#FF9500;
+  --red:#FF3B30; --text:#1D1D1F; --text2:#6E6E73; --text3:#AEAEB2;
+  --bg:#F5F5F7; --card:#FFFFFF; --border:rgba(0,0,0,0.08);
+  --shadow:0 2px 20px rgba(0,0,0,0.06); --shadow-h:0 8px 32px rgba(0,0,0,0.12);
+  --r:16px; --rs:10px; --sw:240px;
+  --font:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body,#root{height:100%}
+body{font-family:var(--font);background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:99px}
+
+/* LAYOUT */
+.app{display:flex;height:100vh;overflow:hidden}
+.sidebar{width:var(--sw);background:var(--card);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;z-index:10}
+.main{flex:1;overflow-y:auto;background:var(--bg)}
+
+/* SIDEBAR */
+.sb-logo{padding:24px 20px 18px;border-bottom:1px solid var(--border)}
+.sb-logo h1{font-size:17px;font-weight:700;letter-spacing:-.5px}
+.sb-logo span{font-size:11px;color:var(--text2)}
+.sb-nav{flex:1;padding:10px 8px;overflow-y:auto}
+.nav-sec{font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.6px;text-transform:uppercase;padding:12px 10px 5px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--rs);cursor:pointer;font-size:13.5px;font-weight:500;color:var(--text2);transition:all .15s;margin-bottom:1px;user-select:none}
+.nav-item:hover{background:var(--bg);color:var(--text)}
+.nav-item.active{background:var(--blue-light);color:var(--blue)}
+.nav-icon{width:18px;text-align:center;font-size:14px}
+.sb-foot{padding:14px;border-top:1px solid var(--border)}
+
+/* PAGE */
+.ph{padding:28px 32px 0}
+.pt{font-size:26px;font-weight:700;letter-spacing:-.8px}
+.ps{font-size:13px;color:var(--text2);margin-top:3px}
+.pb{padding:20px 32px 40px}
+
+/* CARDS */
+.card{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);border:1px solid var(--border)}
+.ci{padding:22px}
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+.stat-card{background:var(--card);border-radius:var(--r);padding:20px 22px;box-shadow:var(--shadow);border:1px solid var(--border)}
+.stat-lbl{font-size:11px;font-weight:500;color:var(--text2);margin-bottom:6px}
+.stat-val{font-size:30px;font-weight:700;letter-spacing:-1.5px}
+.stat-val.blue{color:var(--blue)}.stat-val.green{color:var(--green)}.stat-val.orange{color:var(--orange)}.stat-val.red{color:var(--red)}
+
+/* GRID */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+
+/* TABLES */
+.tw{overflow-x:auto;border-radius:var(--r);background:var(--card);box-shadow:var(--shadow);border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse}
+thead th{padding:11px 14px;text-align:left;font-size:11.5px;font-weight:600;color:var(--text2);border-bottom:1px solid var(--border);background:var(--bg);white-space:nowrap;user-select:none}
+thead th.sortable{cursor:pointer}
+thead th.sortable:hover{color:var(--text)}
+thead th.sort-active{color:var(--blue)}
+tbody tr{border-bottom:1px solid var(--border);transition:background .1s}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:#FAFAFA}
+tbody td{padding:12px 14px;font-size:13.5px;color:var(--text)}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--rs);font-size:13.5px;font-weight:500;cursor:pointer;border:none;transition:all .15s;font-family:var(--font);white-space:nowrap}
+.btn-primary{background:var(--blue);color:#fff}
+.btn-primary:hover{background:#0066DD;transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,122,255,.3)}
+.btn-primary:disabled{background:#AEAEB2;transform:none;box-shadow:none;cursor:not-allowed}
+.btn-ghost{background:var(--bg);color:var(--text);border:1px solid var(--border)}
+.btn-ghost:hover{background:#EBEBED}
+.btn-danger{background:var(--red);color:#fff}
+.btn-danger:hover{background:#D93025}
+.btn-green{background:var(--green);color:#fff}
+.btn-green:hover{background:#28A745}
+.btn-sm{padding:5px 11px;font-size:12px}
+.btn-icon{padding:7px;border-radius:8px;background:var(--bg);border:1px solid var(--border);cursor:pointer;font-size:13px;transition:all .15s}
+.btn-icon:hover{background:#EBEBED}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:99px;font-size:11px;font-weight:600}
+.b-blue{background:var(--blue-light);color:var(--blue)}
+.b-green{background:#E8F8EE;color:var(--green)}
+.b-orange{background:#FFF4E5;color:var(--orange)}
+.b-red{background:#FFF0EE;color:var(--red)}
+.b-gray{background:var(--bg);color:var(--text2)}
+.b-purple{background:#F0EEFF;color:#5856D6}
+
+/* FORMS */
+.fg{margin-bottom:16px}
+.fl{display:block;font-size:12.5px;font-weight:500;color:var(--text2);margin-bottom:5px}
+.fi{width:100%;padding:10px 13px;border-radius:var(--rs);border:1px solid var(--border);background:var(--bg);font-size:13.5px;color:var(--text);font-family:var(--font);outline:none;transition:border-color .15s}
+.fi:focus{border-color:var(--blue);background:#fff;box-shadow:0 0 0 3px rgba(0,122,255,.1)}
+.fi-sel{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236E6E73' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:34px}
+.fi-ta{resize:vertical;min-height:72px}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+
+/* SEARCH */
+.sbar{display:flex;align-items:center;gap:9px;padding:9px 13px;border-radius:var(--rs);background:var(--bg);border:1px solid var(--border)}
+.sbar input{border:none;background:transparent;font-size:13.5px;color:var(--text);outline:none;flex:1;font-family:var(--font)}
+
+/* SCORE BAR */
+.sco-bar{height:5px;background:var(--bg);border-radius:99px;overflow:hidden}
+.sco-fill{height:100%;border-radius:99px;transition:width .3s}
+
+/* LOGIN */
+.lp{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#F5F5F7 0%,#E8F1FF 100%)}
+.lc{background:var(--card);border-radius:24px;padding:42px;width:370px;box-shadow:0 20px 60px rgba(0,0,0,.12);border:1px solid var(--border)}
+.ll{text-align:center;margin-bottom:28px}
+.ll h1{font-size:24px;font-weight:700;letter-spacing:-.8px}
+.ll p{font-size:13px;color:var(--text2);margin-top:5px}
+.pin-disp{font-size:34px;font-weight:300;letter-spacing:10px;text-align:center;padding:14px;border-radius:var(--rs);background:var(--bg);border:1px solid var(--border);margin-bottom:18px;min-height:66px;color:var(--text)}
+.numpad{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.nbtn{aspect-ratio:1;border-radius:var(--rs);background:var(--bg);border:1px solid var(--border);font-size:20px;font-weight:400;color:var(--text);cursor:pointer;transition:all .1s;display:flex;align-items:center;justify-content:center;user-select:none}
+.nbtn:hover{background:#EBEBED;transform:scale(.97)}
+.nbtn:active{transform:scale(.93);background:#D8D8DA}
+.nbtn.blue{background:var(--blue);color:#fff;border-color:var(--blue)}
+.nbtn.red-btn{background:var(--red);color:#fff;border-color:var(--red)}
+
+/* EXAM (TIMER) */
+.exam-bg{min-height:100vh;background:#000;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.exam-timer{font-size:110px;font-weight:200;letter-spacing:-5px;font-variant-numeric:tabular-nums;line-height:1}
+.exam-timer.urgent{color:#FF3B30;animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.55}}
+.timer-ctrl{display:flex;gap:12px;margin-top:44px}
+.tbtn{padding:13px 30px;border-radius:99px;border:2px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#fff;font-size:15px;font-weight:500;cursor:pointer;transition:all .2s;font-family:var(--font)}
+.tbtn:hover{background:rgba(255,255,255,.18)}
+.tbtn.primary{background:var(--blue);border-color:var(--blue)}
+.tbtn.danger{background:var(--red);border-color:var(--red)}
+
+/* OMR */
+.omr-page{min-height:100vh;background:linear-gradient(135deg,#F0F4FF 0%,#E8F1FF 100%);padding:32px 20px;display:flex;flex-direction:column;align-items:center}
+.omr-header{text-align:center;margin-bottom:28px}
+.omr-header h1{font-size:22px;font-weight:700;letter-spacing:-.5px}
+.omr-header p{font-size:14px;color:var(--text2);margin-top:4px}
+.omr-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;width:100%;max-width:760px;margin-bottom:24px}
+.omr-q{background:#fff;border-radius:14px;padding:14px 10px;box-shadow:0 2px 12px rgba(0,0,0,.06);border:1px solid var(--border);text-align:center}
+.omr-qno{font-size:11px;font-weight:700;color:var(--text3);margin-bottom:10px;letter-spacing:.5px}
+.omr-choices{display:flex;gap:5px;justify-content:center;flex-wrap:wrap}
+.omr-circle{width:32px;height:32px;border-radius:50%;border:2px solid var(--border);font-size:13px;font-weight:600;color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;background:#fff;user-select:none}
+.omr-circle:hover{border-color:var(--blue);color:var(--blue)}
+.omr-circle.sel{background:var(--blue);border-color:var(--blue);color:#fff;box-shadow:0 2px 8px rgba(0,122,255,.35)}
+.omr-sa{width:100%;border:1px solid var(--border);border-radius:8px;padding:7px 10px;font-size:13px;text-align:center;outline:none;font-family:var(--font);background:#fff;transition:border-color .15s}
+.omr-sa:focus{border-color:var(--blue);box-shadow:0 0 0 2px rgba(0,122,255,.1)}
+
+/* MODAL */
+.mo{position:fixed;inset:0;background:rgba(0,0,0,.38);display:flex;align-items:center;justify-content:center;z-index:1000;backdrop-filter:blur(5px)}
+.mc{background:var(--card);border-radius:var(--r);padding:28px;width:500px;max-width:95vw;max-height:92vh;overflow-y:auto;box-shadow:0 30px 80px rgba(0,0,0,.18)}
+.mc h2{font-size:19px;font-weight:700;margin-bottom:18px}
+.mf{display:flex;justify-content:flex-end;gap:10px;margin-top:20px;padding-top:18px;border-top:1px solid var(--border)}
+
+/* TOOLBAR */
+.tb{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;gap:10px;flex-wrap:wrap}
+.tb-l{display:flex;align-items:center;gap:9px;flex:1;min-width:0;flex-wrap:wrap}
+.tb-r{display:flex;align-items:center;gap:8px}
+
+/* TABS */
+.tabs{display:flex;gap:3px;background:var(--bg);padding:4px;border-radius:var(--rs);border:1px solid var(--border)}
+.tab{padding:6px 14px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;color:var(--text2);transition:all .15s}
+.tab.active{background:var(--card);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.08)}
+
+/* RANKS */
+.rank-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
+.rank-row:last-child{border-bottom:none}
+.rank-n{width:26px;height:26px;border-radius:50%;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--text2);flex-shrink:0}
+.rank-n.gold{background:#FFD700;color:#7A5900}.rank-n.silver{background:#C0C0C0;color:#555}.rank-n.bronze{background:#CD7F32;color:#fff}
+
+/* EMPTY */
+.empty{text-align:center;padding:52px 20px;color:var(--text3)}
+.empty-ico{font-size:44px;margin-bottom:14px}
+.empty-txt{font-size:15px;font-weight:500;color:var(--text2)}
+
+/* BACK */
+.back{display:inline-flex;align-items:center;gap:5px;font-size:13.5px;color:var(--blue);cursor:pointer;font-weight:500;background:none;border:none;font-family:var(--font);padding:3px 0;margin-bottom:14px}
+
+/* ASSIGN CARD */
+.assign-card{background:var(--card);border-radius:14px;padding:18px 20px;border:2px solid var(--border);cursor:pointer;transition:all .2s;position:relative}
+.assign-card:hover{border-color:var(--blue);box-shadow:0 4px 20px rgba(0,122,255,.12);transform:translateY(-1px)}
+.assign-card.pending{border-color:var(--orange)}
+.assign-card.done{border-color:var(--green);opacity:.65}
+
+/* ANSWER KEY */
+.ak-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:12px}
+.ak-item{background:var(--bg);border-radius:10px;padding:10px 6px;text-align:center;border:1px solid var(--border)}
+.ak-qno{font-size:10px;font-weight:600;color:var(--text3);margin-bottom:6px}
+.ak-type-btns{display:flex;gap:3px;justify-content:center;margin-bottom:6px}
+.ak-tbtn{padding:2px 6px;border-radius:5px;font-size:10px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:#fff;color:var(--text2);transition:all .1s}
+.ak-tbtn.active-mc{background:var(--blue);color:#fff;border-color:var(--blue)}
+.ak-tbtn.active-sa{background:var(--orange);color:#fff;border-color:var(--orange)}
+.ak-choices{display:flex;gap:3px;justify-content:center}
+.ak-c{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--border);font-size:10px;font-weight:600;color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .1s}
+.ak-c:hover{border-color:var(--blue);color:var(--blue)}
+.ak-c.sel{background:var(--blue);border-color:var(--blue);color:#fff}
+.ak-sa-in{width:100%;border:1.5px solid var(--border);border-radius:6px;padding:4px 5px;font-size:11px;text-align:center;outline:none;font-family:var(--font);background:#fff}
+.ak-sa-in:focus{border-color:var(--orange)}
+
+/* RESULT */
+.res-q{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:10px;margin-bottom:5px}
+.res-q.correct{background:#E8F8EE}.res-q.wrong{background:#FFF0EE}
+
+/* PRINT */
+@media print{.sidebar,.btn,.tb,.back,.tabs{display:none!important}.main{overflow:visible}body{background:#fff}.card,.tw{box-shadow:none;border:1px solid #ddd}}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  :root{--sw:56px}
+  .nav-item span,.sb-logo h1,.sb-logo span,.nav-sec,.sb-foot .si{display:none}
+  .sb-logo{padding:16px 8px}.sb-foot{padding:8px}
+  .stat-grid{grid-template-columns:1fr 1fr}
+  .ph{padding:18px 14px 0}.pb{padding:14px}
+  .frow,.g2,.g3{grid-template-columns:1fr}
+}
+@media(max-width:600px){
+  .stat-grid{grid-template-columns:1fr}
+  .lc{width:100%;border-radius:0;min-height:100vh}
+  .omr-grid{grid-template-columns:repeat(3,1fr)}
+}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useRef, useCallback } = React;
+
+// ═══════════════ 초기 데이터 ═══════════════
+
+function makeQ(n, defaultType='MC') {
+  return Array.from({length:n},(_,i)=>({no:i+1, type:defaultType, answer:''}));
+}
+
+const INIT_STUDENTS = [
+  {id:'0001',name:'김민준',grade:'중2',school:'장승중학교',phone:'010-1234-5678',memo:''},
+  {id:'0002',name:'이서연',grade:'중2',school:'장승중학교',phone:'010-2345-6789',memo:''},
+  {id:'0003',name:'박도윤',grade:'중3',school:'장승중학교',phone:'010-3456-7890',memo:'꼼꼼한 풀이 스타일'},
+  {id:'0004',name:'최지아',grade:'중1',school:'장승중학교',phone:'010-4567-8901',memo:''},
+  {id:'0005',name:'정우진',grade:'중2',school:'장승중학교',phone:'010-5678-9012',memo:'계산 실수 잦음'},
+  {id:'0006',name:'김하은',grade:'중3',school:'장승중학교',phone:'010-6789-0123',memo:''},
+  {id:'0007',name:'이준혁',grade:'중1',school:'장승중학교',phone:'010-7890-1234',memo:'기하 단원 약점'},
+  {id:'0008',name:'박서현',grade:'중2',school:'장승중학교',phone:'010-8901-2345',memo:''},
+];
+
+// 시험지에 정답 키 포함
+const INIT_PAPERS = [
+  { id:'p1', name:'중2-방정식 기초', unit:'방정식', grade:'중2', difficulty:'Easy', total:15, type:'Daily Test',
+    questions:[{no:1,type:'MC',answer:'3'},{no:2,type:'MC',answer:'1'},{no:3,type:'MC',answer:'4'},{no:4,type:'MC',answer:'2'},{no:5,type:'MC',answer:'5'},{no:6,type:'MC',answer:'3'},{no:7,type:'MC',answer:'1'},{no:8,type:'MC',answer:'2'},{no:9,type:'MC',answer:'4'},{no:10,type:'MC',answer:'3'},{no:11,type:'SA',answer:'6'},{no:12,type:'SA',answer:'12'},{no:13,type:'SA',answer:'-3'},{no:14,type:'SA',answer:'9'},{no:15,type:'SA',answer:'4'}]},
+  { id:'p2', name:'중2-부등식 심화', unit:'부등식', grade:'중2', difficulty:'Hard', total:15, type:'Daily Test',
+    questions:makeQ(15,'MC').map((q,i)=>({...q,answer:String((i%5)+1)}))},
+  { id:'p3', name:'중2-함수 기본', unit:'함수', grade:'중2', difficulty:'Normal', total:15, type:'Daily Test',
+    questions:makeQ(15,'MC').map((q,i)=>({...q,answer:String(((i*2)%5)+1)}))},
+  { id:'p4', name:'중3-이차방정식', unit:'이차방정식', grade:'중3', difficulty:'Normal', total:15, type:'Weekly Test',
+    questions:makeQ(10,'MC').concat(makeQ(5,'SA').map((q,i)=>({...q,no:i+11,answer:String(i+1)})))},
+  { id:'p5', name:'중1-정수와 유리수', unit:'정수', grade:'중1', difficulty:'Easy', total:15, type:'Daily Test',
+    questions:makeQ(15,'MC').map((q,i)=>({...q,answer:String((i%4)+1)}))},
+  { id:'p6', name:'주간테스트 A형', unit:'종합', grade:'전체', difficulty:'Normal', total:15, type:'Weekly Test',
+    questions:makeQ(15,'MC').map((q,i)=>({...q,answer:String((i%5)+1)}))},
+];
+
+function makeDate(d){const dt=new Date();dt.setDate(dt.getDate()-d);return dt.toISOString().split('T')[0]}
+
+const INIT_RECORDS = [
+  {id:'r01',studentId:'0001',paperId:'p1',score:13,date:makeDate(2),solveMin:18,errorType:'계산 실수',retake:false,memo:'',tags:'방정식',answers:{}},
+  {id:'r02',studentId:'0001',paperId:'p3',score:11,date:makeDate(9),solveMin:20,errorType:'개념 부족',retake:false,memo:'함수 개념 재학습 필요',tags:'함수',answers:{}},
+  {id:'r03',studentId:'0001',paperId:'p6',score:14,date:makeDate(16),solveMin:17,errorType:'',retake:false,memo:'잘함',tags:'종합',answers:{}},
+  {id:'r04',studentId:'0002',paperId:'p1',score:14,date:makeDate(3),solveMin:16,errorType:'',retake:false,memo:'우수',tags:'방정식',answers:{}},
+  {id:'r05',studentId:'0002',paperId:'p3',score:13,date:makeDate(10),solveMin:19,errorType:'계산 실수',retake:false,memo:'',tags:'함수',answers:{}},
+  {id:'r06',studentId:'0003',paperId:'p4',score:14,date:makeDate(1),solveMin:18,errorType:'',retake:false,memo:'',tags:'이차방정식',answers:{}},
+  {id:'r07',studentId:'0003',paperId:'p6',score:13,date:makeDate(8),solveMin:19,errorType:'계산 실수',retake:false,memo:'',tags:'종합',answers:{}},
+  {id:'r08',studentId:'0004',paperId:'p5',score:12,date:makeDate(4),solveMin:17,errorType:'개념 부족',retake:true,memo:'정수 개념 부족',tags:'정수',answers:{}},
+  {id:'r09',studentId:'0005',paperId:'p1',score:9,date:makeDate(5),solveMin:20,errorType:'계산 실수',retake:true,memo:'계산 연습 필요',tags:'방정식',answers:{}},
+  {id:'r10',studentId:'0006',paperId:'p4',score:15,date:makeDate(2),solveMin:15,errorType:'',retake:false,memo:'만점',tags:'이차방정식',answers:{}},
+  {id:'r11',studentId:'0007',paperId:'p5',score:13,date:makeDate(3),solveMin:18,errorType:'개념 부족',retake:false,memo:'',tags:'정수',answers:{}},
+  {id:'r12',studentId:'0008',paperId:'p1',score:12,date:makeDate(6),solveMin:19,errorType:'계산 실수',retake:false,memo:'',tags:'방정식',answers:{}},
+];
+
+// 배정 샘플 (관리자가 학생에게 시험지 배정)
+const INIT_ASSIGNMENTS = [
+  {id:'a1',studentId:'0001',paperId:'p2',timeMode:'20',customMin:'20',assignedAt:makeDate(0),used:false},
+  {id:'a2',studentId:'0003',paperId:'p4',timeMode:'45',customMin:'45',assignedAt:makeDate(0),used:false},
+];
+
+// ═══════════════ 유틸 ═══════════════
+
+function useLS(key, init) {
+  const [v,setV] = useState(()=>{try{const s=localStorage.getItem(key);return s?JSON.parse(s):init}catch{return init}});
+  const save = useCallback(x=>{setV(x);try{localStorage.setItem(key,JSON.stringify(x))}catch{}},[key]);
+  return [v,save];
+}
+const fmt=n=>n<10?'0'+n:''+n;
+const fmtSec=s=>fmt(Math.floor(s/60))+':'+fmt(s%60);
+const uid=()=>'id'+Date.now()+Math.random().toString(36).slice(2,5);
+const calcAcc=(s,t)=>t>0?Math.round(s/t*100):0;
+const avg=a=>a.length?Math.round(a.reduce((x,y)=>x+y,0)/a.length*10)/10:0;
+const diffCol=d=>d==='Easy'?'b-green':d==='Hard'?'b-red':'b-orange';
+const typeCol=t=>t==='Mock Test'?'b-red':t==='Weekly Test'?'b-orange':'b-blue';
+const avColor=id=>{const c=['#007AFF','#34C759','#FF9500','#FF3B30','#AF52DE','#5856D6','#FF2D55','#32ADE6'];return c[parseInt(id)%c.length]};
+const ini=n=>n?n[0]:'?';
+
+function autoGrade(questions, answers) {
+  if (!questions || questions.length === 0) return null;
+  let correct = 0;
+  questions.forEach(q => {
+    const ans = (answers[q.no] || '').toString().trim();
+    const key = (q.answer || '').toString().trim();
+    if (key && ans.toLowerCase() === key.toLowerCase()) correct++;
+  });
+  return correct;
+}
+
+function exportCSV(records, students, papers) {
+  const hdr = ['날짜','학생번호','학생명','시험지','점수','총점','정답률','오류유형','재시험','메모'];
+  const rows = records.map(r=>{
+    const s=students.find(x=>x.id===r.studentId)||{name:'?',id:r.studentId};
+    const p=papers.find(x=>x.id===r.paperId)||{name:'?',total:15};
+    return [r.date,s.id,s.name,p.name,r.score,p.total,calcAcc(r.score,p.total)+'%',r.errorType,r.retake?'Y':'N',r.memo];
+  });
+  const csv=[hdr,...rows].map(r=>r.join(',')).join('\n');
+  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download='시험기록.csv';a.click();URL.revokeObjectURL(url);
+}
+
+// ═══════════════ 차트 ═══════════════
+
+function LineChart({ labels, datasets, height=200 }) {
+  const ref=useRef();const ch=useRef();
+  useEffect(()=>{
+    if(ch.current)ch.current.destroy();
+    if(!ref.current)return;
+    ch.current=new Chart(ref.current,{type:'line',data:{labels,datasets:datasets.map(d=>({
+      label:d.label,data:d.data,borderColor:d.color||'#007AFF',backgroundColor:(d.color||'#007AFF')+'22',
+      borderWidth:2.5,pointRadius:4,pointHoverRadius:6,fill:true,tension:.35,
+      pointBackgroundColor:'#fff',pointBorderColor:d.color||'#007AFF',pointBorderWidth:2
+    }))},options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:datasets.length>1,position:'bottom',labels:{font:{size:12},color:'#6E6E73',boxWidth:12,padding:14}},
+        tooltip:{mode:'index',intersect:false,backgroundColor:'#fff',titleColor:'#1D1D1F',bodyColor:'#6E6E73',borderColor:'rgba(0,0,0,.1)',borderWidth:1,padding:11,cornerRadius:9}},
+      scales:{x:{grid:{display:false},ticks:{color:'#6E6E73',font:{size:11}}},y:{grid:{color:'rgba(0,0,0,.04)'},ticks:{color:'#6E6E73',font:{size:11}},beginAtZero:true}},
+      interaction:{mode:'nearest',axis:'x',intersect:false}}});
+    return()=>ch.current?.destroy();
+  },[JSON.stringify(labels),JSON.stringify(datasets)]);
+  return <div style={{position:'relative',height:height+'px',width:'100%'}}><canvas ref={ref}/></div>;
+}
+function BarChart({ labels, data, color='#007AFF', height=190 }) {
+  const ref=useRef();const ch=useRef();
+  useEffect(()=>{
+    if(ch.current)ch.current.destroy();
+    if(!ref.current)return;
+    ch.current=new Chart(ref.current,{type:'bar',data:{labels,datasets:[{data,backgroundColor:color+'BB',borderRadius:6,borderSkipped:false}]},
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{display:false},tooltip:{backgroundColor:'#fff',titleColor:'#1D1D1F',bodyColor:'#6E6E73',borderColor:'rgba(0,0,0,.1)',borderWidth:1,padding:10,cornerRadius:8}},
+        scales:{x:{grid:{display:false},ticks:{color:'#6E6E73',font:{size:11}}},y:{grid:{color:'rgba(0,0,0,.04)'},ticks:{color:'#6E6E73',font:{size:11}},beginAtZero:true}}}});
+    return()=>ch.current?.destroy();
+  },[JSON.stringify(labels),JSON.stringify(data),color]);
+  return <div style={{position:'relative',height:height+'px',width:'100%'}}><canvas ref={ref}/></div>;
+}
+function Doughnut({ labels, data, colors, height=180 }) {
+  const ref=useRef();const ch=useRef();
+  useEffect(()=>{
+    if(ch.current)ch.current.destroy();
+    if(!ref.current)return;
+    ch.current=new Chart(ref.current,{type:'doughnut',data:{labels,datasets:[{data,backgroundColor:colors,borderWidth:0,hoverOffset:4}]},
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{position:'right',labels:{font:{size:12},color:'#6E6E73',padding:12,boxWidth:12}}},cutout:'68%'}});
+    return()=>ch.current?.destroy();
+  },[JSON.stringify(labels),JSON.stringify(data)]);
+  return <div style={{position:'relative',height:height+'px',width:'100%'}}><canvas ref={ref}/></div>;
+}
+
+// ═══════════════ 정렬 헬퍼 ═══════════════
+
+function SortIcon({active, dir}) {
+  if (!active) return <span style={{color:'#C7C7CC',marginLeft:3}}>↕</span>;
+  return <span style={{color:'var(--blue)',marginLeft:3}}>{dir===1?'↑':'↓'}</span>;
+}
+function useSortable(initKey='date', initDir=-1) {
+  const [key,setKey] = useState(initKey);
+  const [dir,setDir] = useState(initDir);
+  const toggle = k => { if(k===key) setDir(d=>-d); else {setKey(k);setDir(-1);} };
+  return {key,dir,toggle};
+}
+
+// ═══════════════ 로그인 ═══════════════
+
+function LoginPage({ students, onStudent, onAdmin }) {
+  const [pin,setPin] = useState('');
+  const [err,setErr] = useState('');
+  const [adminMode,setAdminMode] = useState(false);
+  const [pw,setPw] = useState('');
+  const [pwErr,setPwErr] = useState('');
+
+  const press = k => {
+    setErr('');
+    if(k==='del'){setPin(p=>p.slice(0,-1));return}
+    if(pin.length>=4)return;
+    const next=pin+k; setPin(next);
+    if(next.length===4) setTimeout(()=>{
+      const s=students.find(x=>x.id===next);
+      if(s){onStudent(s);setPin('')}
+      else{setErr('등록된 학생번호가 아닙니다.');setPin('')}
+    },150);
+  };
+  const tryAdmin=()=>{if(pw==='admin123'){onAdmin();setPw('');setAdminMode(false)}else setPwErr('비밀번호가 틀렸습니다.')};
+
+  if(adminMode) return (
+    <div className="lp">
+      <div className="lc">
+        <div className="ll"><div style={{fontSize:30,marginBottom:6}}>🔐</div><h1>관리자 로그인</h1><p>비밀번호를 입력하세요</p></div>
+        <div className="fg">
+          <input className="fi" type="password" placeholder="비밀번호 (admin123)" value={pw}
+            onChange={e=>{setPw(e.target.value);setPwErr('')}} onKeyDown={e=>e.key==='Enter'&&tryAdmin()} autoFocus />
+          {pwErr&&<p style={{color:'var(--red)',fontSize:12,marginTop:4}}>{pwErr}</p>}
+        </div>
+        <div style={{display:'flex',gap:9}}>
+          <button className="btn btn-ghost" style={{flex:1}} onClick={()=>{setAdminMode(false);setPw('');setPwErr('')}}>← 뒤로</button>
+          <button className="btn btn-primary" style={{flex:1}} onClick={tryAdmin}>로그인</button>
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="lp">
+      <div className="lc">
+        <div className="ll"><div style={{fontSize:30,marginBottom:6}}>📐</div><h1>15Q20M</h1><p>학원 시험 관리 시스템 · 학생번호 4자리 입력</p></div>
+        <div className="pin-disp" style={{color:pin?'var(--text)':'var(--text3)'}}>{pin?'●'.repeat(pin.length)+'○'.repeat(4-pin.length):'_ _ _ _'}</div>
+        {err&&<p style={{color:'var(--red)',fontSize:12,textAlign:'center',marginBottom:8}}>{err}</p>}
+        <div className="numpad">
+          {['1','2','3','4','5','6','7','8','9'].map(k=><button key={k} className="nbtn" onClick={()=>press(k)}>{k}</button>)}
+          <button className="nbtn" style={{fontSize:12,color:'var(--blue)',fontWeight:600}} onClick={()=>setAdminMode(true)}>관리자</button>
+          <button className="nbtn" onClick={()=>press('0')}>0</button>
+          <button className="nbtn red-btn" onClick={()=>press('del')}>⌫</button>
+        </div>
+        <p style={{textAlign:'center',fontSize:11,color:'var(--text3)',marginTop:16}}>학생번호를 모를 경우 선생님께 문의하세요</p>
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════ 학생 시험 화면 ═══════════════
+
+function StudentExam({ student, assignments, papers, onSave, onLogout }) {
+  const [phase,setPhase] = useState('setup'); // setup | running | paused | done
+  const [selAssign,setSelAssign] = useState(null);
+  const [elapsed,setElapsed] = useState(0);
+  const [remaining,setRemaining] = useState(1200);
+  const [answers,setAnswers] = useState({});
+  const [memo,setMemo] = useState('');
+  const itvRef = useRef();
+
+  const myAssigns = assignments.filter(a=>a.studentId===student.id && !a.used);
+  const paper = selAssign ? papers.find(p=>p.id===selAssign.paperId) : null;
+  const timeSec = selAssign ? (selAssign.timeMode==='20'?1200:selAssign.timeMode==='45'?2700:parseInt(selAssign.customMin||20)*60) : 1200;
+
+  const startExam = () => { setRemaining(timeSec); setElapsed(0); setPhase('running'); };
+  const stopExam = () => { clearInterval(itvRef.current); setPhase('done'); };
+
+  useEffect(()=>{
+    if(phase==='running'){
+      itvRef.current=setInterval(()=>{
+        setRemaining(r=>{if(r<=1){clearInterval(itvRef.current);setPhase('done');playAlarm();return 0}return r-1});
+        setElapsed(e=>e+1);
+      },1000);
+    } else clearInterval(itvRef.current);
+    return()=>clearInterval(itvRef.current);
+  },[phase]);
+
+  const playAlarm=()=>{try{const ctx=new(window.AudioContext||window.webkitAudioContext)();[0,500,1000].forEach(d=>{const o=ctx.createOscillator();const g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.frequency.value=880;g.gain.value=.3;o.start(ctx.currentTime+d/1000);o.stop(ctx.currentTime+d/1000+.4)})}catch{}};
+
+  const handleSubmit = () => {
+    const score = autoGrade(paper?.questions, answers) ?? 0;
+    const rec = {
+      id:uid(), studentId:student.id, paperId:selAssign.paperId,
+      score, date:new Date().toISOString().split('T')[0],
+      solveMin:Math.round(elapsed/60), errorType:'', retake:score/paper.total<0.6,
+      memo, tags:paper?.unit||'', answers
+    };
+    onSave(rec, selAssign.id);
+    setPhase('result'); // 결과 화면
+  };
+
+  const urgent = remaining<=180 && remaining>0;
+
+  // ── 배정 없음 ──
+  if(myAssigns.length===0 && phase==='setup') return (
+    <div style={{minHeight:'100vh',background:'linear-gradient(135deg,#F5F5F7,#E8F1FF)',display:'flex',alignItems:'center',justifyContent:'center'}}>
+      <div style={{background:'#fff',borderRadius:24,padding:40,width:460,boxShadow:'0 20px 60px rgba(0,0,0,.12)',border:'1px solid var(--border)',textAlign:'center'}}>
+        <div style={{fontSize:52,marginBottom:16}}>🕐</div>
+        <h1 style={{fontSize:22,fontWeight:700,marginBottom:8}}>배정된 시험이 없습니다</h1>
+        <p style={{color:'var(--text2)',fontSize:14,lineHeight:1.6}}>선생님이 시험을 배정하면<br/>이 화면에서 바로 시작할 수 있습니다.</p>
+        <div style={{marginTop:24}}>
+          <p style={{fontSize:13,color:'var(--text3)',marginBottom:16}}>학번 {student.id} · {student.name} · {student.grade}</p>
+          <button className="btn btn-ghost" onClick={onLogout}>← 로그아웃</button>
+        </div>
+      </div>
+    </div>
+  );
+
+  // ── 시험 선택 화면 ──
+  if(phase==='setup') return (
+    <div style={{minHeight:'100vh',background:'linear-gradient(135deg,#F5F5F7,#E8F1FF)',display:'flex',alignItems:'center',justifyContent:'center',padding:20}}>
+      <div style={{background:'#fff',borderRadius:24,padding:36,width:540,boxShadow:'0 20px 60px rgba(0,0,0,.12)',border:'1px solid var(--border)'}}>
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:24}}>
+          <div>
+            <h1 style={{fontSize:20,fontWeight:700}}>안녕하세요, {student.name}! 👋</h1>
+            <p style={{color:'var(--text2)',fontSize:13,marginTop:3}}>{student.id} · {student.grade} · {student.school}</p>
+          </div>
+          <button className="btn btn-ghost btn-sm" onClick={onLogout}>로그아웃</button>
+        </div>
+        <p style={{fontSize:13,font:600,color:'var(--text2)',marginBottom:12}}>배정된 시험 목록 ({myAssigns.length}개)</p>
+        <div style={{display:'flex',flexDirection:'column',gap:10,marginBottom:20}}>
+          {myAssigns.map(a=>{
+            const p=papers.find(x=>x.id===a.paperId);
+            const tLabel=a.timeMode==='20'?'20분':a.timeMode==='45'?'45분':a.customMin+'분';
+            return (
+              <div key={a.id} className={`assign-card pending${selAssign?.id===a.id?' ':''}`}
+                style={selAssign?.id===a.id?{borderColor:'var(--blue)',background:'var(--blue-light)'}:{}}
+                onClick={()=>setSelAssign(a)}>
+                <div style={{display:'flex',alignItems:'center',gap:12}}>
+                  <div style={{fontSize:28}}>📄</div>
+                  <div style={{flex:1}}>
+                    <div style={{fontSize:15,fontWeight:600}}>{p?.name||'?'}</div>
+                    <div style={{fontSize:12,color:'var(--text2)',marginTop:2}}>{p?.unit} · {p?.difficulty} · {tLabel} · {p?.total}문제</div>
+                  </div>
+                  {selAssign?.id===a.id && <span style={{color:'var(--blue)',fontSize:18}}>✓</span>}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        <button className="btn btn-primary" style={{width:'100%',justifyContent:'center',fontSize:15,padding:'13px'}}
+          onClick={startExam} disabled={!selAssign}>
+          🚀 시험 시작
+        </button>
+      </div>
+    </div>
+  );
+
+  // ── 타이머 화면 ──
+  if(phase==='running'||phase==='paused') return (
+    <div className="exam-bg">
+      <div style={{textAlign:'center',marginBottom:36}}>
+        <h2 style={{fontSize:20,fontWeight:500,opacity:.9}}>{student.name} · {paper?.name}</h2>
+        <p style={{fontSize:14,opacity:.5,marginTop:5}}>{student.id} · {selAssign?.timeMode==='20'?'20분':selAssign?.timeMode==='45'?'45분':selAssign?.customMin+'분'} 시험</p>
+      </div>
+      <div className={`exam-timer${urgent?' urgent':''}`}>{fmtSec(remaining)}</div>
+      <p style={{opacity:.35,marginTop:14,fontSize:13}}>경과 {fmtSec(elapsed)}</p>
+      <div className="timer-ctrl">
+        {phase==='running'&&<button className="tbtn" onClick={()=>setPhase('paused')}>⏸ 일시정지</button>}
+        {phase==='paused'&&<button className="tbtn primary" onClick={()=>setPhase('running')}>▶ 재시작</button>}
+        <button className="tbtn danger" onClick={stopExam}>■ 시험 종료</button>
+      </div>
+    </div>
+  );
+
+  // ── OMR 답안 입력 화면 ──
+  if(phase==='done') {
+    const questions = paper?.questions || [];
+    const filled = questions.filter(q=>answers[q.no]&&answers[q.no].toString().trim()).length;
+    return (
+      <div className="omr-page">
+        <div className="omr-header">
+          <div style={{background:'var(--blue)',color:'#fff',borderRadius:99,padding:'4px 16px',fontSize:12,fontWeight:600,display:'inline-block',marginBottom:12}}>📝 답안 입력</div>
+          <h1>{paper?.name}</h1>
+          <p>{student.name} · 풀이시간 {fmtSec(elapsed)} · 총 {questions.length}문제</p>
+          <div style={{marginTop:8,fontSize:13,color:filled===questions.length?'var(--green)':'var(--orange)',fontWeight:600}}>
+            {filled}/{questions.length}문제 입력됨
+          </div>
+        </div>
+        <div className="omr-grid" style={{gridTemplateColumns:`repeat(${Math.min(5,questions.length)},1fr)`}}>
+          {questions.map(q=>(
+            <div key={q.no} className="omr-q">
+              <div className="omr-qno">문 {q.no}</div>
+              {q.type==='MC' ? (
+                <div className="omr-choices">
+                  {['1','2','3','4','5'].map(n=>(
+                    <div key={n} className={`omr-circle${answers[q.no]===n?' sel':''}`}
+                      onClick={()=>setAnswers(a=>({...a,[q.no]:a[q.no]===n?'':n}))}>
+                      {n}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <input className="omr-sa" placeholder="답 입력" value={answers[q.no]||''}
+                  onChange={e=>setAnswers(a=>({...a,[q.no]:e.target.value}))}
+                  style={{marginTop:4}} />
+              )}
+            </div>
+          ))}
+        </div>
+        <div style={{width:'100%',maxWidth:760,marginBottom:16}}>
+          <div className="fg">
+            <label className="fl">메모 (선택)</label>
+            <input className="fi" placeholder="느낀 점이나 어려웠던 부분..." value={memo} onChange={e=>setMemo(e.target.value)} />
+          </div>
+        </div>
+        <div style={{display:'flex',gap:10,width:'100%',maxWidth:760}}>
+          <button className="btn btn-ghost" style={{flex:1,justifyContent:'center'}} onClick={()=>setPhase('running')}>← 돌아가기</button>
+          <button className="btn btn-primary" style={{flex:2,justifyContent:'center',fontSize:15,padding:'13px'}}
+            onClick={handleSubmit}>
+            ✅ 제출하기 ({filled}/{questions.length})
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ── 결과 화면 ──
+  if(phase==='result') {
+    const questions = paper?.questions || [];
+    const score = autoGrade(questions, answers) ?? 0;
+    const acc = calcAcc(score, questions.length);
+    return (
+      <div style={{minHeight:'100vh',background:'linear-gradient(135deg,#F0F9FF,#E8F1FF)',display:'flex',alignItems:'center',justifyContent:'center',padding:20}}>
+        <div style={{background:'#fff',borderRadius:24,padding:40,width:520,boxShadow:'0 24px 80px rgba(0,122,255,.14)',border:'1px solid rgba(0,122,255,.12)'}}>
+          <div style={{textAlign:'center',marginBottom:28}}>
+            <div style={{width:72,height:72,borderRadius:50,background:acc>=80?'var(--green)':acc>=60?'var(--orange)':'var(--red)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:30,margin:'0 auto 14px',boxShadow:'0 8px 24px rgba(0,0,0,.15)'}}>
+              {acc>=80?'🎉':acc>=60?'👍':'💪'}
+            </div>
+            <h1 style={{fontSize:24,fontWeight:700,letterSpacing:-.5}}>{score} / {questions.length}문제</h1>
+            <div style={{fontSize:32,fontWeight:700,color:acc>=80?'var(--green)':acc>=60?'var(--orange)':'var(--red)',marginTop:4}}>{acc}%</div>
+            <p style={{color:'var(--text2)',fontSize:13,marginTop:8}}>{paper?.name} · 풀이 {fmtSec(elapsed)}</p>
+          </div>
+          <div style={{maxHeight:240,overflowY:'auto',marginBottom:20}}>
+            {questions.map(q=>{
+              const a=(answers[q.no]||'').toString().trim();
+              const k=(q.answer||'').toString().trim();
+              const ok=k&&a.toLowerCase()===k.toLowerCase();
+              return (
+                <div key={q.no} className={`res-q ${ok?'correct':'wrong'}`}>
+                  <span style={{width:28,height:28,borderRadius:50,background:ok?'var(--green)':'var(--red)',color:'#fff',display:'flex',alignItems:'center',justifyContent:'center',fontSize:11,fontWeight:700,flexShrink:0}}>{ok?'✓':'✗'}</span>
+                  <span style={{fontSize:13,flex:1}}><strong>문 {q.no}</strong> · 내 답: <strong>{a||'미입력'}</strong> {!ok&&<span style={{color:'var(--red)'}}> → 정답: {k}</span>}</span>
+                </div>
+              );
+            })}
+          </div>
+          <button className="btn btn-primary" style={{width:'100%',justifyContent:'center',fontSize:15,padding:'13px'}}
+            onClick={onLogout}>
+            완료 · 로그아웃
+          </button>
+        </div>
+      </div>
+    );
+  }
+  return null;
+}
+
+// ═══════════════ 사이드바 ═══════════════
+
+const NAV = [
+  {key:'dashboard',icon:'📊',label:'대시보드'},
+  {key:'assign',icon:'📬',label:'시험 배정'},
+  {key:'students',icon:'👥',label:'학생 목록'},
+  {key:'entry',icon:'✏️',label:'점수 직접입력'},
+  {key:'records',icon:'📋',label:'시험 기록'},
+  {key:'papers',icon:'📄',label:'시험지 관리'},
+  {key:'analytics',icon:'📈',label:'분석'},
+  {key:'report',icon:'📑',label:'학부모 리포트'},
+];
+
+function Sidebar({ page, onChange, onLogout, counts }) {
+  return (
+    <div className="sidebar">
+      <div className="sb-logo">
+        <h1>📐 15Q20M</h1>
+        <span>학원 시험 관리 시스템</span>
+      </div>
+      <nav className="sb-nav">
+        <div className="nav-sec">메뉴</div>
+        {NAV.map(n=>(
+          <div key={n.key} className={`nav-item${page===n.key?' active':''}`} onClick={()=>onChange(n.key)}>
+            <span className="nav-icon">{n.icon}</span>
+            <span>{n.label}</span>
+          </div>
+        ))}
+        <div className="nav-sec" style={{marginTop:10}}>현황</div>
+        <div className="nav-item" style={{pointerEvents:'none'}}><span className="nav-icon">👤</span><span>학생 {counts.s}명</span></div>
+        <div className="nav-item" style={{pointerEvents:'none'}}><span className="nav-icon">📝</span><span>기록 {counts.r}건</span></div>
+        <div className="nav-item" style={{pointerEvents:'none'}}><span className="nav-icon">📬</span><span>미완료 배정 {counts.a}건</span></div>
+      </nav>
+      <div className="sb-foot">
+        <div style={{display:'flex',alignItems:'center',gap:9}}>
+          <div style={{width:30,height:30,borderRadius:50,background:'var(--blue)',display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',fontSize:12,fontWeight:600,flexShrink:0}}>관</div>
+          <div className="si">
+            <div style={{fontSize:13,fontWeight:500}}>관리자</div>
+            <div style={{fontSize:11,color:'var(--blue)',cursor:'pointer'}} onClick={onLogout}>← 로그아웃</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════ 대시보드 ═══════════════
+
+// 종합 랭킹 점수 계산
+// 정답률(40) + 시험횟수(20) + 최근향상도(20) + 만점횟수(10) + 재시험없음(10)
+function calcRankScore(sid, records, papers) {
+  const recs = records.filter(r=>r.studentId===sid);
+  if(!recs.length) return null;
+  const sorted = [...recs].sort((a,b)=>new Date(a.date)-new Date(b.date));
+  const getAcc = r => { const p=papers.find(x=>x.id===r.paperId)||{total:15}; return calcAcc(r.score,p.total); };
+  const accs = recs.map(getAcc);
+  const avgAcc = avg(accs);
+
+  // 1. 정답률 점수 (40점 만점)
+  const accScore = Math.round(avgAcc / 100 * 40);
+
+  // 2. 시험 횟수 점수 (20점 만점, 10회 이상 = 만점)
+  const cntScore = Math.min(20, Math.round(recs.length / 10 * 20));
+
+  // 3. 최근 향상도 점수 (20점 만점) - 최근 3회 vs 이전 3회 평균 비교
+  let improveScore = 10; // 기본 10점
+  if(sorted.length >= 4) {
+    const half = Math.floor(sorted.length/2);
+    const oldAvg = avg(sorted.slice(0,half).map(getAcc));
+    const newAvg = avg(sorted.slice(-half).map(getAcc));
+    const diff = newAvg - oldAvg;
+    improveScore = Math.min(20, Math.max(0, 10 + Math.round(diff/5)));
+  }
+
+  // 4. 만점 횟수 점수 (10점 만점)
+  const perfectCnt = recs.filter(r=>{ const p=papers.find(x=>x.id===r.paperId)||{total:15}; return r.score===p.total; }).length;
+  const perfectScore = Math.min(10, perfectCnt*2);
+
+  // 5. 재시험 없음 점수 (10점 만점)
+  const retakePct = recs.filter(r=>r.retake).length / recs.length;
+  const retakeScore = Math.round((1-retakePct)*10);
+
+  const total = accScore + cntScore + improveScore + perfectScore + retakeScore;
+  return { total, accScore, cntScore, improveScore, perfectScore, retakeScore, avgAcc, cnt:recs.length, perfectCnt };
+}
+
+function Dashboard({ students, records, papers, assignments, onNav }) {
+  const [rankTab, setRankTab] = useState('total'); // total | acc | cnt | improve | perfect
+  const today=new Date().toISOString().split('T')[0];
+  const todayR=records.filter(r=>r.date===today);
+  const allAcc=records.map(r=>{const p=papers.find(x=>x.id===r.paperId)||{total:15};return calcAcc(r.score,p.total)});
+  const pendingA=assignments.filter(a=>!a.used).length;
+
+  const weeks=[];
+  for(let i=6;i>=0;i--){
+    const d=new Date();d.setDate(d.getDate()-i*7);
+    const wS=new Date(d);wS.setDate(d.getDate()-7);
+    const label=`${d.getMonth()+1}/${d.getDate()}`;
+    const wr=records.filter(r=>{const rd=new Date(r.date);return rd>=wS&&rd<=d});
+    const ac=wr.map(r=>{const p=papers.find(x=>x.id===r.paperId)||{total:15};return calcAcc(r.score,p.total)});
+    weeks.push({label,value:avg(ac)||null});
+  }
+
+  const unitMap={};
+  records.forEach(r=>{const p=papers.find(x=>x.id===r.paperId);if(!p)return;const u=p.unit;if(!unitMap[u])unitMap[u]=[];unitMap[u].push(calcAcc(r.score,p.total))});
+  const unitD=Object.entries(unitMap).map(([u,a])=>({unit:u,avg:avg(a)})).sort((a,b)=>a.avg-b.avg).slice(0,6);
+  const recent=[...records].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,6);
+
+  // 종합 랭킹 데이터 계산
+  const rankData = students.map(s=>{
+    const sc = calcRankScore(s.id, records, papers);
+    return sc ? {...s, ...sc} : null;
+  }).filter(Boolean);
+
+  const RANK_TABS = [
+    {key:'total', label:'🏆 종합', getVal:r=>r.total, unit:'점', max:100},
+    {key:'acc',   label:'📊 정답률', getVal:r=>r.avgAcc, unit:'%', max:100},
+    {key:'cnt',   label:'📝 횟수', getVal:r=>r.cnt, unit:'회', max:null},
+    {key:'improve',label:'📈 향상도', getVal:r=>r.improveScore, unit:'점', max:20},
+    {key:'perfect',label:'💯 만점', getVal:r=>r.perfectCnt, unit:'회', max:null},
+  ];
+  const curTab = RANK_TABS.find(t=>t.key===rankTab);
+  const sortedRank = [...rankData].sort((a,b)=>curTab.getVal(b)-curTab.getVal(a)).slice(0,6);
+
+  // 점수 항목 색상
+  const barColor = (score, max) => {
+    if(!max) return 'var(--blue)';
+    const pct = score/max*100;
+    return pct>=80?'var(--green)':pct>=60?'var(--blue)':'var(--orange)';
+  };
+
+  return (
+    <div>
+      <div className="ph"><div className="pt">대시보드</div><div className="ps">{new Date().toLocaleDateString('ko-KR')}</div></div>
+      <div className="pb">
+        <div className="stat-grid">
+          <div className="stat-card"><div className="stat-lbl">전체 학생</div><div className="stat-val blue">{students.length}</div></div>
+          <div className="stat-card"><div className="stat-lbl">오늘 시험</div><div className="stat-val green">{todayR.length}</div></div>
+          <div className="stat-card"><div className="stat-lbl">전체 평균 정답률</div><div className="stat-val orange">{avg(allAcc)}%</div></div>
+          <div className="stat-card"><div className="stat-lbl">미완료 배정</div><div className="stat-val red">{pendingA}</div></div>
+        </div>
+        <div className="g2" style={{marginBottom:18}}>
+          <div className="card"><div className="ci">
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14}}>
+              <h3 style={{fontSize:14,fontWeight:600}}>주간 성적 추세</h3><span className="badge b-blue">7주</span>
+            </div>
+            <LineChart labels={weeks.map(w=>w.label)} datasets={[{label:'평균 정답률(%)',data:weeks.map(w=>w.value),color:'#007AFF'}]} height={195}/>
+          </div></div>
+          <div className="card"><div className="ci">
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14}}>
+              <h3 style={{fontSize:14,fontWeight:600}}>단원별 평균 정답률</h3><span className="badge b-orange">약점 분석</span>
+            </div>
+            <BarChart labels={unitD.map(u=>u.unit)} data={unitD.map(u=>u.avg)} color='#FF9500' height={195}/>
+          </div></div>
+        </div>
+        <div className="g2">
+          {/* ── 다항목 랭킹 ── */}
+          <div className="card"><div className="ci">
+            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:14}}>
+              <h3 style={{fontSize:14,fontWeight:600}}>🏆 학생 랭킹</h3>
+              <div style={{display:'flex',gap:3,flexWrap:'wrap'}}>
+                {RANK_TABS.map(t=>(
+                  <button type="button" key={t.key}
+                    style={{padding:'3px 9px',borderRadius:99,border:`1px solid ${rankTab===t.key?'var(--blue)':'var(--border)'}`,background:rankTab===t.key?'var(--blue)':'var(--bg)',color:rankTab===t.key?'#fff':'var(--text2)',fontSize:11,fontWeight:600,cursor:'pointer',transition:'all .15s'}}
+                    onClick={()=>setRankTab(t.key)}>{t.label}</button>
+                ))}
+              </div>
+            </div>
+
+            {/* 종합점수 기준: 점수 배분 안내 */}
+            {rankTab==='total'&&(
+              <div style={{background:'var(--blue-light)',borderRadius:9,padding:'8px 12px',marginBottom:12,display:'flex',gap:6,flexWrap:'wrap'}}>
+                {[{lbl:'정답률',pt:'40점'},{lbl:'시험횟수',pt:'20점'},{lbl:'향상도',pt:'20점'},{lbl:'만점',pt:'10점'},{lbl:'성실도',pt:'10점'}].map(x=>(
+                  <span key={x.lbl} style={{fontSize:10.5,color:'var(--blue)',background:'rgba(0,122,255,.08)',padding:'2px 7px',borderRadius:99,fontWeight:600}}>{x.lbl} {x.pt}</span>
+                ))}
+              </div>
+            )}
+
+            {rankData.length===0?<div className="empty"><div className="empty-ico">📊</div><div className="empty-txt">기록 없음</div></div>
+            :sortedRank.map((s,i)=>{
+              const val = curTab.getVal(s);
+              const dispMax = curTab.max || Math.max(...sortedRank.map(curTab.getVal));
+              const pct = dispMax ? Math.round(val/dispMax*100) : 100;
+              return (
+                <div key={s.id} style={{marginBottom:10}}>
+                  <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:4}}>
+                    <div className={`rank-n${i===0?' gold':i===1?' silver':i===2?' bronze':''}`}>{i+1}</div>
+                    <div style={{flex:1,minWidth:0}}>
+                      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+                        <span style={{fontSize:13,fontWeight:600}}>{s.name}</span>
+                        <span style={{fontSize:14,fontWeight:700,color:barColor(val,curTab.max)}}>{val}{curTab.unit}</span>
+                      </div>
+                      {rankTab==='total'&&(
+                        <div style={{display:'flex',gap:4,marginTop:2}}>
+                          {[
+                            {lbl:'정답률',v:s.accScore,m:40,c:'#007AFF'},
+                            {lbl:'횟수',v:s.cntScore,m:20,c:'#34C759'},
+                            {lbl:'향상도',v:s.improveScore,m:20,c:'#FF9500'},
+                            {lbl:'만점',v:s.perfectScore,m:10,c:'#AF52DE'},
+                            {lbl:'성실도',v:s.retakeScore,m:10,c:'#5856D6'},
+                          ].map(it=>(
+                            <div key={it.lbl} title={`${it.lbl}: ${it.v}/${it.m}점`}
+                              style={{height:4,flex:it.m,borderRadius:99,background:it.c+'44',position:'relative',overflow:'hidden'}}>
+                              <div style={{position:'absolute',left:0,top:0,height:'100%',width:(it.v/it.m*100)+'%',background:it.c,borderRadius:99}}/>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      {rankTab!=='total'&&(
+                        <div style={{height:4,background:'var(--bg)',borderRadius:99,marginTop:3,overflow:'hidden'}}>
+                          <div style={{height:'100%',width:pct+'%',background:barColor(val,curTab.max),borderRadius:99,transition:'width .4s'}}/>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  {rankTab==='total'&&(
+                    <div style={{paddingLeft:40,display:'flex',gap:10,fontSize:10.5,color:'var(--text2)'}}>
+                      <span>평균 {s.avgAcc}%</span><span>·</span>
+                      <span>시험 {s.cnt}회</span><span>·</span>
+                      <span>만점 {s.perfectCnt}회</span>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div></div>
+
+          <div className="card"><div className="ci">
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14}}>
+              <h3 style={{fontSize:14,fontWeight:600}}>최근 시험 기록</h3>
+              <button className="btn btn-ghost btn-sm" onClick={()=>onNav('records')}>전체 보기</button>
+            </div>
+            {recent.map(r=>{
+              const s=students.find(x=>x.id===r.studentId)||{name:'?'};
+              const p=papers.find(x=>x.id===r.paperId)||{name:'?',total:15};
+              const ac=calcAcc(r.score,p.total);
+              return (
+                <div key={r.id} style={{display:'flex',alignItems:'center',gap:10,padding:'9px 0',borderBottom:'1px solid var(--border)'}}>
+                  <div style={{width:30,height:30,borderRadius:50,background:avColor(r.studentId),display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',fontSize:11,fontWeight:600,flexShrink:0}}>{ini(s.name)}</div>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{fontSize:12.5,fontWeight:500,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{s.name} · {p.name}</div>
+                    <div style={{fontSize:11,color:'var(--text3)'}}>{r.date}</div>
+                  </div>
+                  <div style={{fontSize:13,fontWeight:700,color:ac>=80?'var(--green)':ac>=60?'var(--orange)':'var(--red)'}}>{ac}%</div>
+                </div>
+              );
+            })}
+          </div></div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════ 시험 배정 관리 ═══════════════
+
+function AssignPage({ students, papers, assignments, onAdd, onDelete }) {
+  const [showModal,setShowModal] = useState(false);
+  const [form,setForm] = useState({studentId:'',paperId:'',timeMode:'20',customMin:'30'});
+  const sort = useSortable('assignedAt',-1);
+
+  const pending = assignments.filter(a=>!a.used);
+  const done = assignments.filter(a=>a.used);
+
+  const save = () => {
+    if(!form.studentId||!form.paperId){alert('학생과 시험지를 선택하세요');return}
+    onAdd({id:uid(),...form,assignedAt:new Date().toISOString().split('T')[0],used:false});
+    setShowModal(false); setForm({studentId:'',paperId:'',timeMode:'20',customMin:'30'});
+  };
+
+  const AssignTable = ({list, title, badge}) => {
+    const sorted=[...list].sort((a,b)=>{
+      if(sort.key==='assignedAt') return sort.dir*(new Date(a.assignedAt)-new Date(b.assignedAt));
+      if(sort.key==='name'){const sa=students.find(x=>x.id===a.studentId)?.name||'';const sb=students.find(x=>x.id===b.studentId)?.name||'';return sort.dir*sa.localeCompare(sb,'ko')}
+      return 0;
+    });
+    return (
+      <div style={{marginBottom:24}}>
+        <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:12}}>
+          <h3 style={{fontSize:15,fontWeight:600}}>{title}</h3>
+          <span className={`badge ${badge}`}>{list.length}건</span>
+        </div>
+        <div className="tw">
+          <table>
+            <thead><tr>
+              <th className="sortable sort-active" onClick={()=>sort.toggle('name')}>학생 <SortIcon active={sort.key==='name'} dir={sort.dir}/></th>
+              <th>시험지</th>
+              <th>시간</th>
+              <th className="sortable" onClick={()=>sort.toggle('assignedAt')}>배정일 <SortIcon active={sort.key==='assignedAt'} dir={sort.dir}/></th>
+              <th>상태</th>
+              {!done.includes(list[0]) && <th>삭제</th>}
+            </tr></thead>
+            <tbody>
+              {sorted.length===0?<tr><td colSpan={6}><div className="empty"><div className="empty-ico">📭</div><div className="empty-txt">없음</div></div></td></tr>
+              :sorted.map(a=>{
+                const s=students.find(x=>x.id===a.studentId)||{name:'?'};
+                const p=papers.find(x=>x.id===a.paperId)||{name:'?'};
+                const tL=a.timeMode==='20'?'20분':a.timeMode==='45'?'45분':a.customMin+'분';
+                return (
+                  <tr key={a.id}>
+                    <td>
+                      <div style={{display:'flex',alignItems:'center',gap:9}}>
+                        <div style={{width:28,height:28,borderRadius:50,background:avColor(a.studentId),display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',fontSize:11,fontWeight:600}}>{ini(s.name)}</div>
+                        <div><div style={{fontSize:13,fontWeight:500}}>{s.name}</div><div style={{fontSize:11,color:'var(--text3)'}}>{s.id}</div></div>
+                      </div>
+                    </td>
+                    <td><div style={{fontSize:13,fontWeight:500}}>{p.name}</div><div style={{fontSize:11,color:'var(--text3)'}}>{p.unit}</div></td>
+                    <td><span className="badge b-blue">{tL}</span></td>
+                    <td style={{fontSize:12,color:'var(--text2)'}}>{a.assignedAt}</td>
+                    <td>{a.used?<span className="badge b-green">완료</span>:<span className="badge b-orange">대기중</span>}</td>
+                    {!a.used&&<td><button className="btn-icon" onClick={()=>{if(confirm('배정 취소?'))onDelete(a.id)}}>🗑</button></td>}
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div>
+      <div className="ph"><div className="pt">시험 배정</div><div className="ps">관리자가 학생에게 시험지를 배정합니다</div></div>
+      <div className="pb">
+        <div className="tb">
+          <div className="tb-l"/>
+          <div className="tb-r">
+            <button className="btn btn-primary" onClick={()=>setShowModal(true)}>+ 시험 배정</button>
+          </div>
+        </div>
+        <AssignTable list={pending} title="📬 대기 중인 배정" badge="b-orange"/>
+        <AssignTable list={done} title="✅ 완료된 배정" badge="b-green"/>
+
+        {showModal&&(
+          <div className="mo" onClick={()=>setShowModal(false)}>
+            <div className="mc" onClick={e=>e.stopPropagation()}>
+              <h2>📬 시험 배정</h2>
+              <div className="fg">
+                <label className="fl">학생 선택 *</label>
+                <select className="fi fi-sel" value={form.studentId} onChange={e=>setForm({...form,studentId:e.target.value})}>
+                  <option value=''>학생 선택</option>
+                  {students.map(s=><option key={s.id} value={s.id}>{s.name} ({s.id}) · {s.grade}</option>)}
+                </select>
+              </div>
+              <div className="fg">
+                <label className="fl">시험지 선택 *</label>
+                <select className="fi fi-sel" value={form.paperId} onChange={e=>setForm({...form,paperId:e.target.value})}>
+                  <option value=''>시험지 선택</option>
+                  {papers.map(p=><option key={p.id} value={p.id}>{p.name} ({p.total}문제 · {p.difficulty})</option>)}
+                </select>
+              </div>
+              <div className="fg">
+                <label className="fl">시험 시간</label>
+                <div className="tabs" style={{marginBottom:10}}>
+                  {[['20','20분'],['45','45분'],['custom','직접설정']].map(([m,l])=>(
+                    <div key={m} className={`tab${form.timeMode===m?' active':''}`} onClick={()=>setForm({...form,timeMode:m})}>{l}</div>
+                  ))}
+                </div>
+                {form.timeMode==='custom'&&(
+                  <div style={{display:'flex',alignItems:'center',gap:8}}>
+                    <input className="fi" type="number" value={form.customMin} min={5} max={180}
+                      onChange={e=>setForm({...form,customMin:e.target.value})} style={{width:90}}/>
+                    <span style={{color:'var(--text2)',fontSize:13}}>분</span>
+                  </div>
+                )}
+              </div>
+              <div className="mf">
+                <button className="btn btn-ghost" onClick={()=>setShowModal(false)}>취소</button>
+                <button className="btn btn-primary" onClick={save}>배정</button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════ 학생 목록 ═══════════════
+
+function StudentList({ students, records, papers, onSelect, onAdd, onAddBulk, onDelete }) {
+  const [search,setSearch] = useState('');
+  const [showModal,setShowModal] = useState(false);
+  const [addTab,setAddTab] = useState('single');
+  const [form,setForm] = useState({id:'',name:'',grade:'중2',school:'장승중학교',phone:'',memo:''});
+  const [err,setErr] = useState('');
+  const [bulkText,setBulkText] = useState('');
+  const [bulkPreview,setBulkPreview] = useState([]);
+  const [bulkErr,setBulkErr] = useState('');
+  const sort = useSortable('name',1);
+
+  const filtered = students.filter(s=>s.name.includes(search)||s.id.includes(search)||s.grade.includes(search)||s.school.includes(search));
+  const sorted = [...filtered].sort((a,b)=>{
+    const getV = s => {
+      if(sort.key==='name') return s.name;
+      if(sort.key==='id') return s.id;
+      if(sort.key==='grade') return s.grade;
+      if(sort.key==='avg'){const r=records.filter(x=>x.studentId===s.id);const ac=r.map(x=>{const p=papers.find(y=>y.id===x.paperId)||{total:15};return calcAcc(x.score,p.total)});return avg(ac)||0}
+      if(sort.key==='cnt') return records.filter(x=>x.studentId===s.id).length;
+      return s.name;
+    };
+    const va=getV(a),vb=getV(b);
+    if(typeof va==='number') return sort.dir*(va-vb);
+    return sort.dir*va.localeCompare(vb,'ko');
+  });
+
+  const save=()=>{
+    if(!form.id||!form.name){setErr('학번과 이름은 필수입니다.');return}
+    if(!/^\d{4}$/.test(form.id)){setErr('학번은 4자리 숫자여야 합니다.');return}
+    if(students.find(s=>s.id===form.id)){setErr('이미 존재하는 학번입니다.');return}
+    onAdd({...form});setShowModal(false);setForm({id:'',name:'',grade:'중2',school:'장승중학교',phone:'',memo:''});
+  };
+  const parseBulk=text=>{
+    setBulkErr('');
+    const lines=text.split('\n').map(l=>l.trim()).filter(l=>l);
+    const res=[];const errs=[];
+    lines.forEach((line,i)=>{
+      const cols=line.split(/[,\t]/).map(c=>c.trim());
+      const id=cols[0];const name=cols[1];const grade=cols[2]||'중2';const school=cols[3]||'장승중학교';
+      if(!id||!name){errs.push(`${i+1}번째 줄: 학번/이름 누락`);return}
+      if(!/^\d{4}$/.test(id)){errs.push(`${i+1}번째 줄: 학번 오류(${id})`);return}
+      if(students.find(s=>s.id===id)||res.find(r=>r.id===id)){errs.push(`${i+1}번째 줄: 중복 학번(${id})`);return}
+      res.push({id,name,grade,school,phone:'',memo:''});
+    });
+    setBulkPreview(res);if(errs.length)setBulkErr(errs.join('\n'));return res;
+  };
+  const saveBulk=()=>{if(!bulkPreview.length){setBulkErr('추가할 학생이 없습니다.');return}onAddBulk(bulkPreview);setShowModal(false);setBulkText('');setBulkPreview([]);setBulkErr('')};
+  const getStats=sid=>{const r=records.filter(x=>x.studentId===sid);if(!r.length)return{cnt:0,avg:'-'};const ac=r.map(x=>{const p=papers.find(y=>y.id===x.paperId)||{total:15};return calcAcc(x.score,p.total)});return{cnt:r.length,avg:avg(ac)+'%'}};
+
+  const Th=({k,label})=>(
+    <th className={`sortable${sort.key===k?' sort-active':''}`} onClick={()=>sort.toggle(k)}>
+      {label} <SortIcon active={sort.key===k} dir={sort.dir}/>
+    </th>
+  );
+
+  return (
+    <div>
+      <div className="ph"><div className="pt">학생 목록</div><div className="ps">등록 학생 {students.length}명</div></div>
+      <div className="pb">
+        <div className="tb">
+          <div className="tb-l">
+            <div className="sbar" style={{flex:1,maxWidth:300}}><span>🔍</span><input placeholder="이름, 학번, 학년 검색..." value={search} onChange={e=>setSearch(e.target.value)}/></div>
+          </div>
+          <div className="tb-r">
+            <button className="btn btn-primary" onClick={()=>{setShowModal(true);setAddTab('single');setErr('');setBulkText('');setBulkPreview([]);setBulkErr('')}}>+ 학생 추가</button>
+          </div>
+        </div>
+        <div className="tw">
+          <table>
+            <thead><tr>
+              <Th k="id" label="학번"/>
+              <Th k="name" label="학생명"/>
+              <Th k="grade" label="학년"/>
+              <th>학교</th>
+              <Th k="cnt" label="시험 횟수"/>
+              <Th k="avg" label="평균 정답률"/>
+              <th>연락처</th>
+              <th>액션</th>
+            </tr></thead>
+            <tbody>
+              {sorted.length===0?<tr><td colSpan={8}><div className="empty"><div className="empty-ico">🔍</div><div className="empty-txt">검색 결과 없음</div></div></td></tr>
+              :sorted.map(s=>{
+                const st=getStats(s.id);
+                return (
+                  <tr key={s.id} style={{cursor:'pointer'}} onClick={()=>onSelect(s)}>
+                    <td><span className="badge b-gray">{s.id}</span></td>
+                    <td>
+                      <div style={{display:'flex',alignItems:'center',gap:9}}>
+                        <div style={{width:30,height:30,borderRadius:50,background:avColor(s.id),display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',fontSize:12,fontWeight:600,flexShrink:0}}>{ini(s.name)}</div>
+                        <span style={{fontWeight:500}}>{s.name}</span>
+                      </div>
+                    </td>
+                    <td>{s.grade}</td><td>{s.school}</td>
+                    <td><span className="badge b-blue">{st.cnt}회</span></td>
+                    <td><span style={{fontWeight:600,color:st.avg==='-'?'var(--text3)':parseInt(st.avg)>=80?'var(--green)':parseInt(st.avg)>=60?'var(--orange)':'var(--red)'}}>{st.avg}</span></td>
+                    <td style={{color:'var(--text2)',fontSize:12}}>{s.phone}</td>
+                    <td onClick={e=>e.stopPropagation()}>
+                      <button className="btn btn-danger btn-sm" onClick={()=>{if(confirm(`${s.name} 학생을 삭제하시겠습니까?`))onDelete(s.id)}}>삭제</button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+
+        {showModal&&(
+          <div className="mo" onClick={()=>setShowModal(false)}>
+            <div className="mc" style={{width:560}} onClick={e=>e.stopPropagation()}>
+              <h2>학생 추가</h2>
+              <div className="tabs" style={{marginBottom:18}}>
+                <div className={`tab${addTab==='single'?' active':''}`} onClick={()=>setAddTab('single')}>개별 추가</div>
+                <div className={`tab${addTab==='bulk'?' active':''}`} onClick={()=>setAddTab('bulk')}>일괄 추가 📋</div>
+              </div>
+              {addTab==='single'&&(
+                <>
+                  {err&&<p style={{color:'var(--red)',fontSize:12,marginBottom:10,padding:'7px 11px',background:'#FFF0EE',borderRadius:8}}>{err}</p>}
+                  <div className="frow">
+                    <div className="fg"><label className="fl">학번 (4자리) *</label><input className="fi" placeholder="예: 0011" maxLength={4} value={form.id} onChange={e=>setForm({...form,id:e.target.value})}/></div>
+                    <div className="fg"><label className="fl">이름 *</label><input className="fi" placeholder="이름" value={form.name} onChange={e=>setForm({...form,name:e.target.value})}/></div>
+                  </div>
+                  <div className="frow">
+                    <div className="fg"><label className="fl">학년</label>
+                      <select className="fi fi-sel" value={form.grade} onChange={e=>setForm({...form,grade:e.target.value})}>
+                        {['중1','중2','중3','고1','고2','고3'].map(g=><option key={g}>{g}</option>)}
+                      </select>
+                    </div>
+                    <div className="fg"><label className="fl">학교</label><input className="fi" placeholder="학교명" value={form.school} onChange={e=>setForm({...form,school:e.target.value})}/></div>
+                  </div>
+                  <div className="fg"><label className="fl">연락처</label><input className="fi" placeholder="010-0000-0000" value={form.phone} onChange={e=>setForm({...form,phone:e.target.value})}/></div>
+                  <div className="fg"><label className="fl">메모</label><input className="fi" placeholder="메모 (선택)" value={form.memo} onChange={e=>setForm({...form,memo:e.target.value})}/></div>
+                  <div className="mf"><button className="btn btn-ghost" onClick={()=>{setShowModal(false);setErr('')}}>취소</button><button className="btn btn-primary" onClick={save}>추가</button></div>
+                </>
+              )}
+              {addTab==='bulk'&&(
+                <>
+                  <div style={{background:'var(--blue-light)',borderRadius:9,padding:13,marginBottom:14,fontSize:12.5,color:'var(--blue)',lineHeight:1.7}}>
+                    <strong>형식:</strong> 한 줄에 한 명 · <code style={{background:'rgba(0,122,255,.12)',padding:'1px 5px',borderRadius:4}}>학번,이름,학년,학교</code> (학년·학교 생략 가능)<br/>
+                    <span style={{opacity:.7}}>예) 0009,홍길동,중2,장승중학교 &nbsp; 또는 &nbsp; 0010,김철수</span>
+                  </div>
+                  <div className="fg"><label className="fl">학생 목록 붙여넣기</label>
+                    <textarea className="fi fi-ta" style={{minHeight:150,fontFamily:'monospace',fontSize:12.5,lineHeight:1.8}}
+                      placeholder={"0009,홍길동,중2,장승중학교\n0010,김철수,중3,장승중학교\n0011,이영희"}
+                      value={bulkText} onChange={e=>{setBulkText(e.target.value);parseBulk(e.target.value)}}/>
+                  </div>
+                  {bulkErr&&<div style={{background:'#FFF0EE',border:'1px solid var(--red)',borderRadius:8,padding:'9px 12px',marginBottom:10,fontSize:12,color:'var(--red)',whiteSpace:'pre-line'}}>{bulkErr}</div>}
+                  {bulkPreview.length>0&&(
+                    <div style={{background:'#E8F8EE',border:'1px solid var(--green)',borderRadius:9,padding:12,marginBottom:14}}>
+                      <p style={{fontSize:12.5,fontWeight:600,color:'var(--green)',marginBottom:7}}>✅ 추가 예정 {bulkPreview.length}명</p>
+                      <div style={{display:'flex',flexWrap:'wrap',gap:5}}>{bulkPreview.map(s=><span key={s.id} className="badge b-green">{s.id} {s.name} {s.grade}</span>)}</div>
+                    </div>
+                  )}
+                  <div className="mf">
+                    <button className="btn btn-ghost" onClick={()=>setShowModal(false)}>취소</button>
+                    <button className="btn btn-primary" onClick={saveBulk} disabled={!bulkPreview.length}>+ {bulkPreview.length}명 일괄 추가</button>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════ 학생 상세 ═══════════════
+
+function StudentDetail({ student, records, papers, onBack, onUpdateMemo }) {
+  const [memo,setMemo] = useState(student.memo||'');
+  const [tab,setTab] = useState('history');
+  const recs=[...records.filter(r=>r.studentId===student.id)].sort((a,b)=>new Date(b.date)-new Date(a.date));
+  const accs=recs.map(r=>{const p=papers.find(x=>x.id===r.paperId)||{total:15};return calcAcc(r.score,p.total)});
+  const avgA=avg(accs);
+  const unitMap={};recs.forEach(r=>{const p=papers.find(x=>x.id===r.paperId);if(!p)return;const u=p.unit;if(!unitMap[u])unitMap[u]=[];unitMap[u].push(calcAcc(r.score,p.total))});
+  const unitD=Object.entries(unitMap).map(([u,a])=>({unit:u,avg:avg(a)})).sort((a,b)=>a.avg-b.avg);
+
+  return (
+    <div>
+      <div className="ph">
+        <button className="back" onClick={onBack}>‹ 학생 목록</button>
+        <div style={{display:'flex',alignItems:'center',gap:16,marginTop:6}}>
+          <div style={{width:52,height:52,borderRadius:50,background:avColor(student.id),display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',fontSize:22,fontWeight:700}}>{ini(student.name)}</div>
+          <div><div className="pt">{student.name}</div><div className="ps">{student.id} · {student.grade} · {student.school} · {student.phone}</div></div>
+        </div>
+      </div>
+      <div className="pb">
+        <div className="stat-grid" style={{gridTemplateColumns:'repeat(3,1fr)'}}>
+          <div className="stat-card"><div className="stat-lbl">총 시험 횟수</div><div className="stat-val blue">{recs.length}</div></div>
+          <div className="stat-card"><div className="stat-lbl">평균 정답률</div><div className="stat-val" style={{color:avgA>=80?'var(--green)':avgA>=60?'var(--orange)':'var(--red)'}}>{avgA}%</div></div>
+          <div className="stat-card"><div className="stat-lbl">재시험 기록</div><div className="stat-val red">{recs.filter(r=>r.retake).length}</div></div>
+        </div>
+        <div className="tabs" style={{marginBottom:18}}>
+          {[['history','시험 기록'],['chart','성적 차트'],['weakness','약점 분석'],['memo','교사 메모']].map(([k,l])=>(
+            <div key={k} className={`tab${tab===k?' active':''}`} onClick={()=>setTab(k)}>{l}</div>
+          ))}
+        </div>
+        {tab==='history'&&(
+          <div className="tw"><table>
+            <thead><tr><th>날짜</th><th>시험지</th><th>점수</th><th>정답률</th><th>풀이시간</th><th>오답유형</th><th>재시험</th><th>메모</th></tr></thead>
+            <tbody>
+              {recs.length===0?<tr><td colSpan={8}><div className="empty"><div className="empty-ico">📋</div><div className="empty-txt">시험 기록 없음</div></div></td></tr>
+              :recs.map(r=>{
+                const p=papers.find(x=>x.id===r.paperId)||{name:'?',total:15};
+                const ac=calcAcc(r.score,p.total);
+                return <tr key={r.id}>
+                  <td style={{whiteSpace:'nowrap',fontSize:12}}>{r.date}</td>
+                  <td style={{fontSize:12.5}}>{p.name}</td>
+                  <td><strong>{r.score}</strong><span style={{color:'var(--text3)',fontSize:11}}>/{p.total}</span></td>
+                  <td><div style={{display:'flex',alignItems:'center',gap:7}}><div className="sco-bar" style={{width:56}}><div className="sco-fill" style={{width:ac+'%',background:ac>=80?'var(--green)':ac>=60?'var(--orange)':'var(--red)'}}/></div><span style={{fontSize:12,fontWeight:600,color:ac>=80?'var(--green)':ac>=60?'var(--orange)':'var(--red)'}}>{ac}%</span></div></td>
+                  <td style={{fontSize:12}}>{r.solveMin}분</td>
+                  <td>{r.errorType?<span className="badge b-red">{r.errorType}</span>:<span style={{color:'var(--text3)',fontSize:11}}>-</span>}</td>
+                  <td>{r.retake?<span className="badge b-orange">재시험</span>:<span style={{color:'var(--text3)',fontSize:11}}>-</span>}</td>
+                  <td style={{fontSize:11,color:'var(--text2)',maxWidth:140,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{r.memo||'-'}</td>
+                </tr>;
+              })}
+            </tbody>
+          </table></div>
+        )}
+        {tab==='chart'&&(
+          <div className="g2">
+            <div className="card"><div className="ci">
+              <h3 style={{fontSize:14,fontWeight:600,marginBottom:14}}>정답률 추이</h3>
+              {recs.length>=2?<LineChart labels={[...recs].reverse().map(r=>r.date.slice(5))} datasets={[{label:'정답률(%)',data:[...recs].reverse().map(r=>{const p=papers.find(x=>x.id===r.paperId)||{total:15};return calcAcc(r.score,p.total)}),color:'#007AFF'}]} height={210}/>
+              :<div className="empty"><div className="empty-txt">데이터 부족 (2회 이상 필요)</div></div>}
+            </div></div>
+            <div className="card"><div className="ci">
+              <h3 style={{fontSize:14,fontWeight:600,marginBottom:14}}>점수 분포</h3>
+              {recs.length>0?<BarChart labels={[...recs].reverse().map(r=>r.date.slice(5))} data={[...recs].reverse().map(r=>r.score)} color='#34C759' height={210}/>
+              :<div className="empty"><div className="empty-txt">데이터 없음</div></div>}
+            </div></div>
+          </div>
+        )}
+        {tab==='weakness'&&(
+          <div className="g2">
+            <div className="card"><div className="ci">
+              <h3 style={{fontSize:14,fontWeight:600,marginBottom:14}}>단원별 평균 정답률</h3>
+              {unitD.length>0?<>
+                <BarChart labels={unitD.map(u=>u.unit)} data={unitD.map(u=>u.avg)} color='#FF9500' height={190}/>
+                <div style={{marginTop:14}}>{unitD.slice(0,3).map(u=>(
+                  <div key={u.unit} style={{display:'flex',alignItems:'center',gap:9,marginBottom:7}}>
+                    <span className="badge b-red">{u.unit}</span>
+                    <div className="sco-bar" style={{flex:1}}><div className="sco-fill" style={{width:u.avg+'%',background:'var(--red)'}}/></div>
+                    <span style={{fontSize:12,fontWeight:600,color:'var(--red)',minWidth:34}}>{u.avg}%</span>
+                  </div>
+                ))}</div>
+              </>:<div className="empty"><div className="empty-txt">데이터 없음</div></div>}
+            </div></div>
+            <div className="card"><div className="ci">
+              <h3 style={{fontSize:14,fontWeight:600,marginBottom:14}}>오답 유형 분석</h3>
+              {(()=>{const t={};recs.forEach(r=>{if(r.errorType)t[r.errorType]=(t[r.errorType]||0)+1});const e=Object.entries(t);return e.length?<Doughnut labels={e.map(x=>x[0])} data={e.map(x=>x[1])} colors={['#FF3B30','#FF9500','#007AFF']} height={190}/>:<div className="empty"><div className="empty-txt">오답 유형 없음</div></div>})()}
+            </div></div>
+          </div>
+        )}
+        {tab==='memo'&&(
+          <div className="card"><div className="ci">
+            <h3 style={{fontSize:14,fontWeight:600,marginBottom:14}}>교사 메모</h3>
+            <textarea className="fi fi-ta" style={{minHeight:150,fontSize:13.5,lineHeight:1.7}} value={memo} onChange={e=>setMemo(e.target.value)} placeholder="학생에 대한 메모를 입력하세요..."/>
+            <div style={{marginTop:10,textAlign:'right'}}>
+              <button className="btn btn-primary" onClick={()=>{onUpdateMemo(student.id,memo);alert('저장되었습니다!')}}>💾 저장</button>
+            </div>
+          </div></div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════ 점수 직접입력 ═══════════════
+
+function TestEntry({ students, papers, onSave }) {
+  const blank={studentId:'',paperId:'',score:'',date:new Date().toISOString().split('T')[0],errorType:'',retake:false,memo:''};
+  const [form,setForm] = useState(blank);
+  const [saved,setSaved] = useState(false);
+  const paper=papers.find(p=>p.id===form.paperId);
+  const acc=paper&&form.score!==''?calcAcc(parseInt(form.score),paper.total):null;
+
+  const handleSave=()=>{
+    if(!form.studentId||!form.paperId||form.score===''){alert('학생, 시험지, 점수는 필수입니다.');return}
+    const rec={id:uid(),...form,score:parseInt(form.score),solveMin:20,tags:paper?.unit||'',answers:{}};
+    onSave(rec,null);setSaved(true);setTimeout(()=>setSaved(false),2000);
+    setForm({...blank,studentId:form.studentId});
+  };
+
+  return (
+    <div>
+      <div className="ph"><div className="pt">점수 직접 입력</div><div className="ps">관리자가 수동으로 점수를 입력합니다</div></div>
+      <div className="pb">
+        <div style={{maxWidth:600}}>
+          {saved&&<div style={{background:'#E8F8EE',border:'1px solid var(--green)',borderRadius:9,padding:'11px 15px',marginBottom:14,fontSize:13.5,color:'var(--green)'}}>✅ 저장되었습니다!</div>}
+          <div className="card"><div className="ci">
+            <div className="frow">
+              <div className="fg"><label className="fl">학생 선택 *</label>
+                <select className="fi fi-sel" value={form.studentId} onChange={e=>setForm({...form,studentId:e.target.value})}>
+                  <option value=''>학생 선택</option>
+                  {students.map(s=><option key={s.id} value={s.id}>{s.name} ({s.id})</option>)}
+                </select>
+              </div>
+              <div className="fg"><label className="fl">시험지 선택 *</label>
+                <select className="fi fi-sel" value={form.paperId} onChange={e=>setForm({...form,paperId:e.target.value})}>
+                  <option value=''>시험지 선택</option>
+                  {papers.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}
+                </select>
+              </div>
+            </div>
+            {paper&&<p style={{fontSize:12,color:'var(--blue)',margin:'-8px 0 14px',padding:'7px 11px',background:'var(--blue-light)',borderRadius:8}}>📄 {paper.name} · {paper.total}문제 · {paper.difficulty} · {paper.unit}</p>}
+            <div className="frow">
+              <div className="fg"><label className="fl">점수 *{paper?` (0~${paper.total})`:''}</label>
+                <input className="fi" type="number" min={0} max={paper?.total||99} placeholder="점수 입력" value={form.score}
+                  onChange={e=>setForm({...form,score:e.target.value})} style={{fontSize:24,fontWeight:300,textAlign:'center'}}/>
+                {acc!==null&&<p style={{textAlign:'center',marginTop:5,fontSize:15,fontWeight:600,color:acc>=80?'var(--green)':acc>=60?'var(--orange)':'var(--red)'}}>정답률 {acc}%</p>}
+              </div>
+              <div className="fg"><label className="fl">시험 날짜</label><input className="fi" type="date" value={form.date} onChange={e=>setForm({...form,date:e.target.value})}/></div>
+            </div>
+            <div className="frow">
+              <div className="fg"><label className="fl">오답 유형</label>
+                <select className="fi fi-sel" value={form.errorType} onChange={e=>setForm({...form,errorType:e.target.value})}>
+                  <option value=''>선택 안함</option><option>계산 실수</option><option>개념 부족</option><option>시간 부족</option>
+                </select>
+              </div>
+              <div className="fg"><label className="fl">재시험 여부</label>
+                <div style={{display:'flex',alignItems:'center',gap:9,marginTop:9}}>
+                  <input type="checkbox" id="retake" checked={form.retake} onChange={e=>setForm({...form,retake:e.target.checked})} style={{width:17,height:17,accentColor:'var(--blue)'}}/>
+                  <label htmlFor="retake" style={{fontSize:13.5,cursor:'pointer'}}>재시험 필요</label>
+                </div>
+              </div>
+            </div>
+            <div className="fg"><label className="fl">교사 메모</label><input className="fi" placeholder="메모 (선택)" value={form.memo} onChange={e=>setForm({...form,memo:e.target.value})}/></div>
+            <div style={{display:'flex',gap:10,marginTop:6}}>
+              <button className="btn btn-ghost" style={{flex:1}} onClick={()=>setForm(blank)}>초기화</button>
+              <button className="btn btn-primary" style={{flex:2,justifyContent:'center',fontSize:15,padding:'12px'}} onClick={handleSave}>💾 저장</button>
+            </div>
+          </div></div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════ 시험 기록 ═══════════════
+
+function RecordsPage({ records, students, papers, onDelete, onExport }) {
+  const [search,setSearch] = useState('');
+  const [filterS,setFilterS] = useState('');
+  const [filterP,setFilterP] = useState('');
+  const sort = useSortable('date',-1);
+
+  const filtered=records.filter(r=>{
+    const s=students.find(x=>x.id===r.studentId)||{name:''};
+    const p=papers.find(x=>x.id===r.paperId)||{name:''};
+    const q=search.toLowerCase();
+    return(!filterS||r.studentId===filterS)&&(!filterP||r.paperId===filterP)&&(!q||s.name.includes(q)||p.name.toLowerCase().includes(q)||r.date.includes(q));
+  });
+  const sorted=[...filtered].sort((a,b)=>{
+    if(sort.key==='date') return sort.dir*(new Date(a.date)-new Date(b.date));
+    if(sort.key==='score') return sort.dir*(a.score-b.score);
+    if(sort.key==='acc'){const pa=papers.find(x=>x.id===a.paperId)||{total:15};const pb=papers.find(x=>x.id===b.paperId)||{total:15};return sort.dir*(calcAcc(a.score,pa.total)-calcAcc(b.score,pb.total))}
+    if(sort.key==='name'){const sa=students.find(x=>x.id===a.studentId)?.name||'';const sb=students.find(x=>x.id===b.studentId)?.name||'';return sort.dir*sa.localeCompare(sb,'ko')}
+    if(sort.key==='paper'){const pa=papers.find(x=>x.id===a.paperId)?.name||'';const pb=papers.find(x=>x.id===b.paperId)?.name||'';return sort.dir*pa.localeCompare(pb,'ko')}
+    return 0;
+  });
+
+  const Th=({k,label})=>(
+    <th className={`sortable${sort.key===k?' sort-active':''}`} onClick={()=>sort.toggle(k)}>
+      {label} <SortIcon active={sort.key===k} dir={sort.dir}/>
+    </th>
+  );
+
+  return (
+    <div>
+      <div className="ph"><div className="pt">시험 기록</div><div className="ps">총 {records.length}건</div></div>
+      <div className="pb">
+        <div className="tb">
+          <div className="tb-l" style={{flexWrap:'wrap',gap:8}}>
+            <div className="sbar" style={{width:210}}><span>🔍</span><input placeholder="검색..." value={search} onChange={e=>setSearch(e.target.value)}/></div>
+            <select className="fi fi-sel" style={{width:130}} value={filterS} onChange={e=>setFilterS(e.target.value)}>
+              <option value=''>전체 학생</option>{students.map(s=><option key={s.id} value={s.id}>{s.name}</option>)}
+            </select>
+            <select className="fi fi-sel" style={{width:160}} value={filterP} onChange={e=>setFilterP(e.target.value)}>
+              <option value=''>전체 시험지</option>{papers.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}
+            </select>
+          </div>
+          <div className="tb-r">
+            <span style={{fontSize:12,color:'var(--text2)'}}>{sorted.length}건</span>
+            <button className="btn btn-ghost" onClick={onExport}>⬇ CSV</button>
+          </div>
+        </div>
+        <div className="tw"><table>
+          <thead><tr>
+            <Th k="date" label="날짜"/>
+            <Th k="name" label="학생"/>
+            <Th k="paper" label="시험지"/>
+            <Th k="score" label="점수"/>
+            <Th k="acc" label="정답률"/>
+            <th>오답유형</th><th>재시험</th><th>메모</th><th>삭제</th>
+          </tr></thead>
+          <tbody>
+            {sorted.length===0?<tr><td colSpan={9}><div className="empty"><div className="empty-ico">📭</div><div className="empty-txt">기록 없음</div></div></td></tr>
+            :sorted.map(r=>{
+              const s=students.find(x=>x.id===r.studentId)||{name:'?'};
+              const p=papers.find(x=>x.id===r.paperId)||{name:'?',total:15};
+              const ac=calcAcc(r.score,p.total);
+              return <tr key={r.id}>
+                <td style={{whiteSpace:'nowrap',fontSize:12}}>{r.date}</td>
+                <td>
+                  <div style={{display:'flex',alignItems:'center',gap:8}}>
+                    <div style={{width:26,height:26,borderRadius:50,background:avColor(r.studentId),display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',fontSize:10,fontWeight:600}}>{ini(s.name)}</div>
+                    <span style={{fontSize:12.5,fontWeight:500}}>{s.name}</span>
+                  </div>
+                </td>
+                <td style={{fontSize:12.5}}>{p.name}</td>
+                <td><strong>{r.score}</strong><span style={{color:'var(--text3)',fontSize:11}}>/{p.total}</span></td>
+                <td>
+                  <div style={{display:'flex',alignItems:'center',gap:6}}>
+                    <div className="sco-bar" style={{width:46}}><div className="sco-fill" style={{width:ac+'%',background:ac>=80?'var(--green)':ac>=60?'var(--orange)':'var(--red)'}}/></div>
+                    <span style={{fontSize:12,fontWeight:600,color:ac>=80?'var(--green)':ac>=60?'var(--orange)':'var(--red)'}}>{ac}%</span>
+                  </div>
+                </td>
+                <td>{r.errorType?<span className="badge b-red" style={{fontSize:10}}>{r.errorType}</span>:<span style={{color:'var(--text3)',fontSize:11}}>-</span>}</td>
+                <td>{r.retake?<span className="badge b-orange" style={{fontSize:10}}>Y</span>:<span style={{color:'var(--text3)',fontSize:11}}>-</span>}</td>
+                <td style={{fontSize:11,color:'var(--text2)',maxWidth:110,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{r.memo||'-'}</td>
+                <td><button className="btn-icon" onClick={()=>{if(confirm('삭제?'))onDelete(r.id)}}>🗑</button></td>
+              </tr>;
+            })}
+          </tbody>
+        </table></div>
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════ 시험지 관리 ═══════════════
+
+function PaperMgmt({ papers, records, onAdd, onDelete, onUpdate }) {
+  const [showModal,setShowModal] = useState(false);
+  const [editTarget,setEditTarget] = useState(null);
+  const [step,setStep] = useState(1);
+  const blankForm = {name:'',unit:'',grade:'중2',difficulty:'Normal',total:'15',type:'Daily Test'};
+  const [form,setForm] = useState(blankForm);
+  const [questions,setQuestions] = useState([]);
+  const sort = useSortable('name',1);
+
+  const sorted=[...papers].sort((a,b)=>{
+    const getV=p=>{
+      if(sort.key==='name') return p.name;
+      if(sort.key==='unit') return p.unit;
+      if(sort.key==='grade') return p.grade;
+      if(sort.key==='difficulty') return ['Easy','Normal','Hard'].indexOf(p.difficulty);
+      if(sort.key==='total') return p.total;
+      if(sort.key==='type') return p.type;
+      if(sort.key==='useCnt') return records.filter(r=>r.paperId===p.id).length;
+      return p.name;
+    };
+    const va=getV(a),vb=getV(b);
+    if(typeof va==='number') return sort.dir*(va-vb);
+    return sort.dir*va.localeCompare(vb,'ko');
+  });
+
+  const makeQs = n => Array.from({length:n},(_,i)=>({no:i+1,type:'MC',answer:''}));
+
+  const openAdd = () => {
+    setEditTarget(null); setStep(1); setForm(blankForm); setQuestions([]); setShowModal(true);
+  };
+  const openEdit = (p) => {
+    setEditTarget(p); setStep(1);
+    setForm({name:p.name,unit:p.unit,grade:p.grade,difficulty:p.difficulty,total:String(p.total),type:p.type});
+    setQuestions(p.questions?.length ? p.questions.map(q=>({...q})) : makeQs(p.total));
+    setShowModal(true);
+  };
+
+  const goStep2 = () => {
+    if(!form.name||!form.unit){alert('시험지명과 단원은 필수입니다.');return}
+    const n=parseInt(form.total)||15;
+    setQuestions(prev=>{
+      if(prev.length===n) return prev;
+      if(prev.length<n) return [...prev,...makeQs(n-prev.length).map((q,i)=>({...q,no:prev.length+i+1}))];
+      return prev.slice(0,n);
+    });
+    setStep(2);
+  };
+
+  const setQ = (i, field, val) => {
+    setQuestions(qs => qs.map((q,idx) => {
+      if(idx!==i) return q;
+      if(field==='type') return {...q, type:val, answer:''};
+      return {...q, [field]:val};
+    }));
+  };
+
+  const save = () => {
+    const data = {...form, total:parseInt(form.total)||15, questions};
+    if(editTarget) onUpdate({...editTarget, ...data});
+    else onAdd({id:uid(), ...data});
+    setShowModal(false);
+  };
+
+  const Th=({k,label})=>(
+    <th className={`sortable${sort.key===k?' sort-active':''}`} onClick={()=>sort.toggle(k)}>
+      {label} <SortIcon active={sort.key===k} dir={sort.dir}/>
+    </th>
+  );
+
+  return (
+    <div>
+      <div className="ph"><div className="pt">시험지 관리</div><div className="ps">등록 시험지 {papers.length}개</div></div>
+      <div className="pb">
+        <div className="tb"><div className="tb-l"/><div className="tb-r"><button type="button" className="btn btn-primary" onClick={openAdd}>+ 시험지 추가</button></div></div>
+        <div className="tw"><table>
+          <thead><tr>
+            <Th k="name" label="시험지명"/>
+            <Th k="unit" label="단원"/>
+            <Th k="grade" label="학년"/>
+            <Th k="difficulty" label="난이도"/>
+            <Th k="total" label="문제 수"/>
+            <Th k="type" label="유형"/>
+            <th>정답키</th>
+            <Th k="useCnt" label="사용 횟수"/>
+            <th>수정</th>
+            <th>삭제</th>
+          </tr></thead>
+          <tbody>
+            {sorted.length===0?<tr><td colSpan={10}><div className="empty"><div className="empty-ico">📄</div><div className="empty-txt">등록된 시험지 없음</div></div></td></tr>
+            :sorted.map(p=>(
+              <tr key={p.id}>
+                <td style={{fontWeight:500,fontSize:13}}>{p.name}</td>
+                <td><span className="badge b-blue">{p.unit}</span></td>
+                <td style={{fontSize:12.5}}>{p.grade}</td>
+                <td><span className={`badge ${diffCol(p.difficulty)}`}>{p.difficulty}</span></td>
+                <td style={{fontSize:13}}>{p.total}문제</td>
+                <td><span className="badge b-gray" style={{fontSize:11,maxWidth:90,overflow:'hidden',textOverflow:'ellipsis',display:'inline-block',whiteSpace:'nowrap'}}>{p.type}</span></td>
+                <td>{p.questions?.length?<span className="badge b-green">✓ {p.questions.filter(q=>q.answer).length}/{p.questions.length}</span>:<span className="badge b-gray">미설정</span>}</td>
+                <td>{records.filter(r=>r.paperId===p.id).length}회</td>
+                <td><button type="button" className="btn btn-ghost btn-sm" onClick={()=>openEdit(p)}>✏️ 수정</button></td>
+                <td><button type="button" className="btn-icon" onClick={()=>{if(confirm('삭제?'))onDelete(p.id)}}>🗑</button></td>
+              </tr>
+            ))}
+          </tbody>
+        </table></div>
+
+        {showModal&&(
+          <div className="mo" onClick={()=>setShowModal(false)}>
+            <div className="mc" style={{width:step===2?720:520}} onClick={e=>e.stopPropagation()}>
+              <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:14}}>
+                <h2 style={{margin:0}}>{editTarget?'✏️ 시험지 수정':'+ 시험지 추가'} — {step===1?'기본 정보':'정답 키 입력'}</h2>
+                <span style={{fontSize:12,color:'var(--text2)',marginLeft:'auto'}}>{step}/2단계</span>
+              </div>
+              <div style={{display:'flex',gap:6,marginBottom:20}}>
+                {[1,2].map(s=><div key={s} style={{flex:1,height:4,borderRadius:99,background:s<=step?'var(--blue)':'var(--border)'}}/>)}
+              </div>
+
+              {step===1&&(
+                <>
+                  <div className="fg"><label className="fl">시험지명 *</label><input className="fi" placeholder="예: 중2-방정식 기초" value={form.name} onChange={e=>setForm({...form,name:e.target.value})}/></div>
+                  <div className="frow">
+                    <div className="fg"><label className="fl">단원 *</label><input className="fi" placeholder="예: 방정식" value={form.unit} onChange={e=>setForm({...form,unit:e.target.value})}/></div>
+                    <div className="fg"><label className="fl">학년</label>
+                      <select className="fi fi-sel" value={form.grade} onChange={e=>setForm({...form,grade:e.target.value})}>
+                        {['중1','중2','중3','고1','고2','고3','전체'].map(g=><option key={g}>{g}</option>)}
+                      </select>
+                    </div>
+                  </div>
+                  <div className="frow">
+                    <div className="fg"><label className="fl">난이도</label>
+                      <select className="fi fi-sel" value={form.difficulty} onChange={e=>setForm({...form,difficulty:e.target.value})}>
+                        {['Easy','Normal','Hard'].map(d=><option key={d}>{d}</option>)}
+                      </select>
+                    </div>
+                    <div className="fg"><label className="fl">총 문제 수</label>
+                      <input className="fi" type="number" min={1} max={50} value={form.total} onChange={e=>setForm({...form,total:e.target.value})}/>
+                    </div>
+                  </div>
+                  <div className="fg">
+                    <label className="fl">시험 유형 <span style={{fontSize:11,color:'var(--text3)',fontWeight:400}}>(직접 입력 또는 목록에서 선택)</span></label>
+                    <input className="fi" list="pm-type-list" placeholder="예: Daily Test, 오답노트, 선행..." value={form.type} onChange={e=>setForm({...form,type:e.target.value})}/>
+                    <datalist id="pm-type-list">
+                      <option value="Daily Test"/><option value="Weekly Test"/><option value="Mock Test"/>
+                      <option value="오답노트"/><option value="선행테스트"/><option value="복습테스트"/><option value="형성평가"/>
+                    </datalist>
+                  </div>
+                  <div className="mf">
+                    <button type="button" className="btn btn-ghost" onClick={()=>setShowModal(false)}>취소</button>
+                    <button type="button" className="btn btn-primary" onClick={goStep2}>다음 → 정답 키 입력</button>
+                  </div>
+                </>
+              )}
+
+              {step===2&&(
+                <>
+                  <div style={{background:'var(--blue-light)',borderRadius:9,padding:'9px 13px',marginBottom:14,fontSize:12.5,color:'var(--blue)'}}>
+                    <strong>객관식</strong>: 번호 클릭으로 정답 선택 &nbsp;·&nbsp; <strong>서답형</strong>: 직접 답 입력 &nbsp;·&nbsp; 유형 버튼으로 전환 가능
+                  </div>
+                  <div style={{maxHeight:420,overflowY:'auto',padding:'2px'}}>
+                    <div className="ak-grid" style={{gridTemplateColumns:`repeat(${Math.min(5,questions.length)},1fr)`}}>
+                      {questions.map((q,i)=>(
+                        <div key={i} className="ak-item">
+                          <div className="ak-qno">문 {q.no}</div>
+                          <div className="ak-type-btns">
+                            <button type="button" className={`ak-tbtn${q.type==='MC'?' active-mc':''}`}
+                              onMouseDown={e=>{e.preventDefault();e.stopPropagation();setQ(i,'type','MC');}}>객관식</button>
+                            <button type="button" className={`ak-tbtn${q.type==='SA'?' active-sa':''}`}
+                              onMouseDown={e=>{e.preventDefault();e.stopPropagation();setQ(i,'type','SA');}}>서답형</button>
+                          </div>
+                          {q.type==='MC'?(
+                            <div className="ak-choices">
+                              {['1','2','3','4','5'].map(n=>(
+                                <div key={n} className={`ak-c${q.answer===n?' sel':''}`}
+                                  onMouseDown={e=>{e.preventDefault();e.stopPropagation();setQ(i,'answer',q.answer===n?'':n);}}>{n}</div>
+                              ))}
+                            </div>
+                          ):(
+                            <input className="ak-sa-in" placeholder="정답" value={q.answer||''}
+                              onChange={e=>setQ(i,'answer',e.target.value)}
+                              onMouseDown={e=>e.stopPropagation()}
+                              onClick={e=>e.stopPropagation()}/>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div style={{marginTop:12,padding:'9px 13px',background:'var(--bg)',borderRadius:9,fontSize:12.5,color:'var(--text2)'}}>
+                    정답 입력: <strong style={{color:'var(--blue)'}}>{questions.filter(q=>q.answer).length}/{questions.length}</strong>문제 완료
+                    {questions.filter(q=>!q.answer).length>0&&<span style={{color:'var(--orange)',marginLeft:8}}>⚠ 미입력 문제는 자동채점 제외</span>}
+                  </div>
+                  <div className="mf">
+                    <button type="button" className="btn btn-ghost" onClick={()=>setStep(1)}>← 이전</button>
+                    <button type="button" className="btn btn-primary" onClick={save}>{editTarget?'✅ 수정 완료':'✅ 시험지 저장'}</button>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════ 분석 ═══════════════
+
+function Analytics({ students, records, papers }) {
+  const allAcc=records.map(r=>{const p=papers.find(x=>x.id===r.paperId)||{total:15};return calcAcc(r.score,p.total)});
+  const retakePct=records.length?Math.round(records.filter(r=>r.retake).length/records.length*100):0;
+
+  const months=[];
+  for(let i=5;i>=0;i--){
+    const d=new Date();d.setMonth(d.getMonth()-i);
+    const ym=`${d.getFullYear()}-${fmt(d.getMonth()+1)}`;
+    const recs=records.filter(r=>r.date.startsWith(ym));
+    const ac=recs.map(r=>{const p=papers.find(x=>x.id===r.paperId)||{total:15};return calcAcc(r.score,p.total)});
+    months.push({label:`${d.getMonth()+1}월`,cnt:recs.length,avg:avg(ac)||0});
+  }
+  const typeMap={};records.forEach(r=>{const p=papers.find(x=>x.id===r.paperId);if(!p)return;const t=p.type;if(!typeMap[t])typeMap[t]=[];typeMap[t].push(calcAcc(r.score,p.total))});
+  const studentCompar=students.map(s=>{const r=records.filter(x=>x.studentId===s.id);const ac=r.map(x=>{const p=papers.find(y=>y.id===x.paperId)||{total:15};return calcAcc(x.score,p.total)});return{name:s.name,avg:avg(ac),cnt:r.length}}).filter(s=>s.cnt>0).sort((a,b)=>b.avg-a.avg);
+  const errMap={};records.forEach(r=>{if(r.errorType)errMap[r.errorType]=(errMap[r.errorType]||0)+1});
+  const errE=Object.entries(errMap);
+  const typeE=Object.entries(typeMap);
+
+  return (
+    <div>
+      <div className="ph"><div className="pt">분석</div><div className="ps">전체 데이터 기반 성적 분석</div></div>
+      <div className="pb">
+        <div className="stat-grid">
+          <div className="stat-card"><div className="stat-lbl">전체 평균 정답률</div><div className="stat-val blue">{avg(allAcc)}%</div></div>
+          <div className="stat-card"><div className="stat-lbl">총 시험 횟수</div><div className="stat-val">{records.length}</div></div>
+          <div className="stat-card"><div className="stat-lbl">재시험 비율</div><div className="stat-val orange">{retakePct}%</div></div>
+          <div className="stat-card"><div className="stat-lbl">활성 학생</div><div className="stat-val green">{[...new Set(records.map(r=>r.studentId))].length}</div></div>
+        </div>
+        <div className="g2" style={{marginBottom:18}}>
+          <div className="card"><div className="ci">
+            <h3 style={{fontSize:14,fontWeight:600,marginBottom:14}}>월별 시험 횟수 & 평균 정답률</h3>
+            <LineChart labels={months.map(m=>m.label)} datasets={[{label:'평균 정답률(%)',data:months.map(m=>m.avg),color:'#007AFF'},{label:'시험 횟수',data:months.map(m=>m.cnt),color:'#34C759'}]} height={200}/>
+          </div></div>
+          <div className="card"><div className="ci">
+            <h3 style={{fontSize:14,fontWeight:600,marginBottom:14}}>학생별 평균 정답률 비교</h3>
+            <BarChart labels={studentCompar.map(s=>s.name)} data={studentCompar.map(s=>s.avg)} color='#5856D6' height={200}/>
+          </div></div>
+        </div>
+        <div className="g2">
+          <div className="card"><div className="ci">
+            <h3 style={{fontSize:14,fontWeight:600,marginBottom:14}}>시험 유형별 평균 정답률</h3>
+            {typeE.length>0?<BarChart labels={typeE.map(e=>e[0])} data={typeE.map(([,a])=>avg(a))} color='#FF9500' height={190}/>:<div className="empty"><div className="empty-txt">데이터 없음</div></div>}
+          </div></div>
+          <div className="card"><div className="ci">
+            <h3 style={{fontSize:14,fontWeight:600,marginBottom:14}}>오답 유형 분포</h3>
+            {errE.length>0?<Doughnut labels={errE.map(e=>e[0])} data={errE.map(e=>e[1])} colors={['#FF3B30','#FF9500','#007AFF']} height={190}/>:<div className="empty"><div className="empty-txt">오답 유형 데이터 없음</div></div>}
+          </div></div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════ 학부모 리포트 ═══════════════
+
+function ParentReport({ students, records, papers }) {
+  const [selId,setSelId] = useState('');
+  const student=students.find(s=>s.id===selId);
+  const recs=[...records.filter(r=>r.studentId===selId)].sort((a,b)=>new Date(b.date)-new Date(a.date));
+  const accs=recs.map(r=>{const p=papers.find(x=>x.id===r.paperId)||{total:15};return calcAcc(r.score,p.total)});
+  const avgA=avg(accs);
+  const unitMap={};recs.forEach(r=>{const p=papers.find(x=>x.id===r.paperId);if(!p)return;const u=p.unit;if(!unitMap[u])unitMap[u]=[];unitMap[u].push(calcAcc(r.score,p.total))});
+  const weakU=Object.entries(unitMap).map(([u,a])=>({unit:u,avg:avg(a)})).sort((a,b)=>a.avg-b.avg).slice(0,3);
+  const genComment=()=>{if(!student||!recs.length)return '';if(avgA>=90)return`${student.name} 학생은 전반적으로 매우 우수한 성취를 보이고 있습니다. 현재 페이스를 유지하며 심화 학습을 권장합니다.`;if(avgA>=75)return`${student.name} 학생은 꾸준한 실력 향상을 보이고 있습니다. ${weakU[0]?.unit||'취약 단원'} 부분을 집중 보완한다면 더 좋은 결과를 기대할 수 있습니다.`;if(avgA>=60)return`${student.name} 학생은 기초 개념 이해에 노력하고 있습니다. ${weakU.map(w=>w.unit).join(', ')} 단원의 반복 학습이 필요합니다.`;return`${student.name} 학생은 기초 개념부터 체계적인 학습이 필요한 상태입니다. 가정에서의 적극적인 관심과 지도를 부탁드립니다.`};
+
+  return (
+    <div>
+      <div className="ph"><div className="pt">학부모 리포트</div><div className="ps">개인 성적 리포트 생성 및 인쇄</div></div>
+      <div className="pb">
+        <div style={{maxWidth:700}}>
+          <div className="card" style={{marginBottom:18}}><div className="ci">
+            <div style={{display:'flex',alignItems:'center',gap:10}}>
+              <div style={{flex:1}}>
+                <label className="fl">학생 선택</label>
+                <select className="fi fi-sel" value={selId} onChange={e=>setSelId(e.target.value)}>
+                  <option value=''>학생을 선택하세요</option>
+                  {students.map(s=><option key={s.id} value={s.id}>{s.name} ({s.id}) · {s.grade}</option>)}
+                </select>
+              </div>
+              {student&&<button className="btn btn-primary" style={{marginTop:18,flexShrink:0}} onClick={()=>window.print()}>🖨 인쇄/PDF</button>}
+            </div>
+          </div></div>
+
+          {student&&recs.length>0&&(
+            <div className="card">
+              <div className="ci">
+                <div style={{textAlign:'center',paddingBottom:22,borderBottom:'2px solid var(--border)',marginBottom:22}}>
+                  <div style={{fontSize:11,color:'var(--text2)',letterSpacing:2,textTransform:'uppercase',marginBottom:6}}>15Q20M · 학원 성적 리포트</div>
+                  <h1 style={{fontSize:26,fontWeight:700,letterSpacing:-.8}}>{student.name} 학생 성적 리포트</h1>
+                  <p style={{color:'var(--text2)',marginTop:5,fontSize:13}}>{student.grade} · {student.school} · 발행일: {new Date().toLocaleDateString('ko-KR')}</p>
+                </div>
+                <div className="stat-grid" style={{gridTemplateColumns:'repeat(3,1fr)',marginBottom:22}}>
+                  <div className="stat-card"><div className="stat-lbl">총 시험 횟수</div><div className="stat-val blue">{recs.length}회</div></div>
+                  <div className="stat-card"><div className="stat-lbl">평균 정답률</div><div className="stat-val" style={{color:avgA>=80?'var(--green)':avgA>=60?'var(--orange)':'var(--red)'}}>{avgA}%</div></div>
+                  <div className="stat-card"><div className="stat-lbl">최근 시험</div><div className="stat-val" style={{fontSize:18}}>{recs[0].date}</div></div>
+                </div>
+                <h3 style={{fontSize:14,fontWeight:600,marginBottom:10}}>최근 시험 기록</h3>
+                <div className="tw" style={{marginBottom:22}}>
+                  <table><thead><tr><th>날짜</th><th>시험지</th><th>점수</th><th>정답률</th><th>오답유형</th></tr></thead>
+                  <tbody>{recs.slice(0,5).map(r=>{const p=papers.find(x=>x.id===r.paperId)||{name:'?',total:15};const ac=calcAcc(r.score,p.total);return<tr key={r.id}><td>{r.date}</td><td>{p.name}</td><td><strong>{r.score}</strong>/{p.total}</td><td style={{color:ac>=80?'var(--green)':ac>=60?'var(--orange)':'var(--red)',fontWeight:600}}>{ac}%</td><td>{r.errorType||'-'}</td></tr>})}</tbody>
+                  </table>
+                </div>
+                {weakU.length>0&&<>
+                  <h3 style={{fontSize:14,fontWeight:600,marginBottom:10}}>보완이 필요한 단원</h3>
+                  <div style={{marginBottom:20}}>{weakU.map(u=>(
+                    <div key={u.unit} style={{display:'flex',alignItems:'center',gap:10,marginBottom:9}}>
+                      <span style={{width:72,fontSize:12,fontWeight:500}}>{u.unit}</span>
+                      <div className="sco-bar" style={{flex:1}}><div className="sco-fill" style={{width:u.avg+'%',background:u.avg>=80?'var(--green)':u.avg>=60?'var(--orange)':'var(--red)'}}/></div>
+                      <span style={{width:36,textAlign:'right',fontWeight:600,color:u.avg>=80?'var(--green)':u.avg>=60?'var(--orange)':'var(--red)',fontSize:12}}>{u.avg}%</span>
+                    </div>
+                  ))}</div>
+                </>}
+                <div style={{background:'var(--blue-light)',borderRadius:12,padding:18,marginBottom:14}}>
+                  <h3 style={{fontSize:13,fontWeight:600,color:'var(--blue)',marginBottom:7}}>📝 학습 코멘트</h3>
+                  <p style={{fontSize:13.5,lineHeight:1.7}}>{genComment()}</p>
+                </div>
+                {student.memo&&<div style={{marginTop:14,background:'var(--bg)',borderRadius:11,padding:14}}>
+                  <h3 style={{fontSize:13,fontWeight:600,marginBottom:5}}>교사 메모</h3>
+                  <p style={{fontSize:13,lineHeight:1.7,color:'var(--text2)'}}>{student.memo}</p>
+                </div>}
+                <div style={{textAlign:'center',marginTop:24,paddingTop:18,borderTop:'1px solid var(--border)',fontSize:11,color:'var(--text3)'}}>본 리포트는 15Q20M 학원 시험 관리 시스템에서 자동 생성되었습니다.</div>
+              </div>
+            </div>
+          )}
+          {student&&recs.length===0&&<div className="card"><div className="ci"><div className="empty"><div className="empty-ico">📋</div><div className="empty-txt">시험 기록이 없습니다</div></div></div></div>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════ 메인 앱 ═══════════════
+
+function App() {
+  const [students,setStudents] = useLS('15q_students_v3', INIT_STUDENTS);
+  const [papers,setPapers] = useLS('15q_papers_v3', INIT_PAPERS);
+  const [records,setRecords] = useLS('15q_records_v3', INIT_RECORDS);
+  const [assignments,setAssignments] = useLS('15q_assignments_v3', INIT_ASSIGNMENTS);
+  const [mode,setMode] = useState('login'); // login | student | admin
+  const [curStudent,setCurStudent] = useState(null);
+  const [page,setPage] = useState('dashboard');
+  const [selStudent,setSelStudent] = useState(null);
+
+  const onStudentLogin = s => { setCurStudent(s); setMode('student'); };
+  const onAdminLogin = () => { setMode('admin'); setPage('dashboard'); };
+  const onLogout = () => { setMode('login'); setCurStudent(null); };
+
+  const addRecord = (rec, assignId) => {
+    setRecords(r=>[...r,rec]);
+    if(assignId) setAssignments(a=>a.map(x=>x.id===assignId?{...x,used:true}:x));
+  };
+  const delRecord = id => setRecords(r=>r.filter(x=>x.id!==id));
+  const addStudent = s => setStudents(ss=>[...ss,s]);
+  const addBulkStudents = list => setStudents(ss=>[...ss,...list]);
+  const delStudent = id => setStudents(ss=>ss.filter(s=>s.id!==id));
+  const addPaper = p => setPapers(pp=>[...pp,p]);
+  const delPaper = id => setPapers(pp=>pp.filter(p=>p.id!==id));
+  const updatePaper = p => setPapers(pp=>pp.map(x=>x.id===p.id?p:x));
+  const addAssign = a => setAssignments(aa=>[...aa,a]);
+  const delAssign = id => setAssignments(aa=>aa.filter(a=>a.id!==id));
+  const updateMemo = (id,memo) => setStudents(ss=>ss.map(s=>s.id===id?{...s,memo}:s));
+
+  if(mode==='login') return <LoginPage students={students} onStudent={onStudentLogin} onAdmin={onAdminLogin}/>;
+  if(mode==='student') return <StudentExam student={curStudent} assignments={assignments} papers={papers} onSave={addRecord} onLogout={onLogout}/>;
+
+  // 관리자
+  const renderPage = () => {
+    if(page==='studentDetail'&&selStudent) return <StudentDetail student={selStudent} records={records} papers={papers} onBack={()=>setPage('students')} onUpdateMemo={updateMemo}/>;
+    switch(page) {
+      case 'dashboard': return <Dashboard students={students} records={records} papers={papers} assignments={assignments} onNav={setPage}/>;
+      case 'assign': return <AssignPage students={students} papers={papers} assignments={assignments} onAdd={addAssign} onDelete={delAssign}/>;
+      case 'students': return <StudentList students={students} records={records} papers={papers} onSelect={s=>{setSelStudent(s);setPage('studentDetail')}} onAdd={addStudent} onAddBulk={addBulkStudents} onDelete={delStudent}/>;
+      case 'entry': return <TestEntry students={students} papers={papers} onSave={addRecord}/>;
+      case 'records': return <RecordsPage records={records} students={students} papers={papers} onDelete={delRecord} onExport={()=>exportCSV(records,students,papers)}/>;
+      case 'papers': return <PaperMgmt papers={papers} records={records} onAdd={addPaper} onDelete={delPaper} onUpdate={updatePaper}/>;
+      case 'analytics': return <Analytics students={students} records={records} papers={papers}/>;
+      case 'report': return <ParentReport students={students} records={records} papers={papers}/>;
+      default: return <Dashboard students={students} records={records} papers={papers} assignments={assignments} onNav={setPage}/>;
+    }
+  };
+
+  return (
+    <div className="app">
+      <Sidebar page={page} onChange={p=>{setPage(p);setSelStudent(null)}} onLogout={onLogout}
+        counts={{s:students.length,r:records.length,a:assignments.filter(a=>!a.used).length}}/>
+      <main className="main">{renderPage()}</main>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
