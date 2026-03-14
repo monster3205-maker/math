@@ -7,12 +7,15 @@ export interface LessonRecord {
   notes: string;
 }
 
+export type AIProvider = 'gpt' | 'claude';
+
 export interface GenerateReportRequest {
   studentName: string;
   grade: string;
   month: number;
   year: number;
   records: Pick<LessonRecord, 'date' | 'studyUnit' | 'notes'>[];
+  provider?: AIProvider;
 }
 
 export interface GenerateReportResponse {
@@ -30,4 +33,5 @@ export interface ReportData extends GenerateReportResponse {
   month: number;
   year: number;
   records: Pick<LessonRecord, 'date' | 'studyUnit' | 'notes'>[];
+  provider?: AIProvider;
 }

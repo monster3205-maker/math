@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import InputTable from '@/components/InputTable';
 import ReportCard from '@/components/ReportCard';
-import type { LessonRecord, ReportData, GenerateReportRequest, GenerateReportResponse } from '@/lib/types';
+import type { LessonRecord, ReportData, GenerateReportRequest, GenerateReportResponse, AIProvider } from '@/lib/types';
 
 const SAMPLE_RECORDS: LessonRecord[] = [
   { id: '1', date: '2024-03-05', studentName: '김지우', grade: '중2', studyUnit: '일차방정식', notes: '개념 이해 빠름, 풀이 과정 생략하는 습관 있음' },
@@ -74,6 +74,7 @@ export default function Home() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [inputTab, setInputTab] = useState<GradeTab>('전체');
   const [reportTab, setReportTab] = useState<GradeTab>('전체');
+  const [provider, setProvider] = useState<AIProvider>('gpt');
 
   const addRow = () => setRecords((prev) => [...prev, createEmptyRecord()]);
   const deleteRow = (id: string) => setRecords((prev) => prev.filter((r) => r.id !== id));
@@ -131,6 +132,7 @@ export default function Home() {
           month: selectedMonth,
           year: selectedYear,
           records: studentRecords.map(({ date, studyUnit, notes }) => ({ date, studyUnit, notes })),
+          provider,
         };
 
         try {
@@ -153,6 +155,7 @@ export default function Home() {
             month: selectedMonth,
             year: selectedYear,
             records: body.records,
+            provider,
           });
         } catch (e) {
           newErrors[studentName] = e instanceof Error ? e.message : '총평 생성 실패';
@@ -180,6 +183,21 @@ export default function Home() {
         <section className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
           <h2 className="text-base font-semibold text-gray-800 mb-4">보고서 기준월 선택</h2>
           <div className="flex flex-wrap items-center gap-3">
+            <div className="flex rounded-lg border border-gray-300 overflow-hidden text-sm font-medium">
+              <button
+                onClick={() => setProvider('gpt')}
+                className={`px-4 py-2 transition-colors ${provider === 'gpt' ? 'bg-green-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
+              >
+                GPT-4o
+              </button>
+              <button
+                onClick={() => setProvider('claude')}
+                className={`px-4 py-2 transition-colors border-l border-gray-300 ${provider === 'claude' ? 'bg-orange-500 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
+              >
+                Claude
+              </button>
+            </div>
+            <div className="w-px h-6 bg-gray-200" />
             <select
               value={selectedYear}
               onChange={(e) => setSelectedYear(Number(e.target.value))}

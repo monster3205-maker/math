@@ -134,6 +134,13 @@ export default function ReportCard({ report }: Props) {
           <h1 className="text-2xl font-bold text-gray-900">
             {report.month}월 학습 리포트
           </h1>
+          {report.provider && (
+            <span className={`inline-block mt-1.5 px-2 py-0.5 rounded text-xs font-medium ${
+              report.provider === 'claude' ? 'bg-orange-100 text-orange-600' : 'bg-green-100 text-green-600'
+            }`}>
+              {report.provider === 'claude' ? 'Claude' : 'GPT-4o'}
+            </span>
+          )}
           <div className="mt-3 flex items-center justify-center gap-4 text-gray-700">
             <span className="text-lg font-semibold">{report.studentName}</span>
             <span className="text-gray-400">|</span>
