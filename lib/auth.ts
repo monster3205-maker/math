@@ -38,7 +38,7 @@ export function getUser(): AuthUser | null {
 }
 
 export const ROLE_HOME: Record<Role, string> = {
-  admin: '/reports',
+  admin: '/exam',
   teacher: '/reports',
   student: '/student',
 };
