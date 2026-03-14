@@ -1821,8 +1821,16 @@ function App() {
 
   useEffect(()=>{
     const params = new URLSearchParams(window.location.search);
-    if(params.get('autoAdmin')==='1') onAdminLogin();
-  },[]);
+    if(params.get('autoAdmin')==='1') {
+      onAdminLogin();
+      return;
+    }
+    const pin = params.get('autoStudent');
+    if(pin) {
+      const found = students.find(s => s.id === pin);
+      if(found) onStudentLogin(found);
+    }
+  },[students]);
 
   const addRecord = (rec, assignId) => {
     setRecords(r=>[...r,rec]);

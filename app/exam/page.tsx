@@ -3,13 +3,24 @@
 import { useEffect, useState } from 'react';
 import AuthGuard from '@/components/AuthGuard';
 import { getUser } from '@/lib/auth';
+import { getStudentAccount } from '@/lib/students';
 
 function ExamContent() {
   const [src, setSrc] = useState('');
 
   useEffect(() => {
     const user = getUser();
-    setSrc(user?.role === 'admin' ? '/exam-system.html?autoAdmin=1' : '/exam-system.html');
+    if (!user) return;
+
+    if (user.role === 'admin') {
+      setSrc('/exam-system.html?autoAdmin=1');
+    } else if (user.role === 'student') {
+      const account = getStudentAccount(user.userId);
+      const pin = account?.examPin ?? '';
+      setSrc(pin ? `/exam-system.html?autoStudent=${pin}` : '/exam-system.html');
+    } else {
+      setSrc('/exam-system.html');
+    }
   }, []);
 
   if (!src) return null;
